@@ -2,7 +2,7 @@ from torch import nn
 
 
 class TinyYolo(nn.Module):
-    """Tiny YOLOv1 model. 12.3 millions trainable parametrs."""
+    """Tiny YOLOv1 model. 12.3 millions trainable parametrs. Input = (3, 384, 384)"""
     def __init__(self):
         super(TinyYolo, self).__init__()
         self.S = 6   # grid size
