@@ -10,6 +10,6 @@ with open('metadata.txt', 'w') as file:
         arr.append({
             'fileName': i['fileName'][0],
             'facialEmotion': i['facialEmotion'],
-            'faceRect': i['faceRect']
+            'faceRect': list(map(int, i['faceRect']))
         })
     json.dump(arr, file, indent=True)

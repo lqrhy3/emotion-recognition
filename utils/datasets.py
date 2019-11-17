@@ -24,7 +24,7 @@ class DetectDataset(Dataset):
         image = cv2.imread(img_name)
 
         face_rect = self.ground_tr[self.images[item][:16]]
-        sample = (image, list(map(int, face_rect)))
+        sample = (image, face_rect)
 
         return sample
 
