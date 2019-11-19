@@ -12,9 +12,11 @@ class DetectDataset(Dataset):
 
     def __init__(self, path='../data/detection/'):
         self.datadir = os.path.join(self.dir_, path, 'images')
-        self.ground_tr_dir = os.path.join(self.dir_, path, 'dict_metadata.txt')
-        self.ground_tr = json.load(open(self.ground_tr_dir, 'r'))
         self.images = np.array(os.listdir(self.datadir))
+        self.ground_tr_dir = os.path.join(self.dir_, path, 'dict_metadata.txt')
+
+        with open(self.ground_tr_dir, 'r') as file:
+            self.ground_tr = json.load(file)
 
     def __getitem__(self, item):
         if torch.is_tensor(item):
