@@ -73,22 +73,22 @@ class Loss(torch.nn.Module):
         listed_pred = pred.view(self._N, 5 * self.B + self.C, self.S * self.S).transpose(1, 2)  # [N, SxS, 5xB+C]
         assert (listed_pred.size(1), listed_pred.size(2)) == (self.S*self.S, 5*self.B+self.C)
 
-        obj_pred = listed_target[obj_mask]        # [n_obj_cells, 5xB+C]
+        obj_pred = listed_pred[obj_mask].view(-1, 5*self.B+self.C)        # [n_obj_cells, 5xB+C]
         assert obj_pred.size(1) == 5 * self.B + self.C
 
-        noobj_pred = listed_target[noobj_mask]    # [n_noobj_cells, 5xB+C]
+        noobj_pred = listed_pred[noobj_mask].view(-1, 5*self.B+self.C)    # [n_noobj_cells, 5xB+C]
         assert noobj_pred.size(1) == 5 * self.B + self.C
 
-        obj_target = listed_target[obj_mask]      # [n_noobj_cells, 5xB+C]
-        noobj_target = listed_target[noobj_mask]  # [n_noobj_cells, 5xB+C]
+        obj_target = listed_target[obj_mask].view(-1, 5*self.B+self.C)      # [n_obj_cells, 5xB+C]
+        noobj_target = listed_target[noobj_mask].view(-1, 5*self.B+self.C)  # [n_noobj_cells, 5xB+C]
 
         # Compute loss for cells which have no objects
-        conf_mask = torch.zeros([noobj_target.size()], dtype=torch.uint8)  # [n_noobj_cells, 5xB+C]
+        conf_mask = torch.zeros(noobj_target.size(), dtype=torch.uint8)  # [n_noobj_cells, 5xB+C]
         for b in range(self.B):
             conf_mask[:, 4 + 5 * b] = 1
-        noobj_pred_conf = noobj_pred[conf_mask]      # [n_noobj_cells x 2, ]
-        noobj_target_conf = noobj_target[conf_mask]  # [n_noobj_cells x 2, ]
-        assert noobj_target_conf.size(0) == noobj_target.size(1) * 2
+        noobj_pred_conf = noobj_pred[conf_mask]      # [n_noobj_cells x B, ] confidence for each box
+        noobj_target_conf = noobj_target[conf_mask]  # [n_noobj_cells x B, ]
+        assert noobj_target_conf.size(0) == noobj_target.size(0) * 2
         loss_noobj = F.mse_loss(noobj_pred_conf, noobj_target_conf, reduction='sum')
 
         # Compute loss for cells which contain objects
@@ -97,7 +97,8 @@ class Loss(torch.nn.Module):
         bbox_pred = obj_pred[:, :5*self.B].contiguous().view(-1, 5)      # [n_obj_cells x B, 5]
 
         obj_response_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
-        obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.uint8)  # [n_obj_cells x B, 5]
+        obj_response_target_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
+        # obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.uint8)  # [n_obj_cells x B, 5]
 
         bbox_target_iou = torch.zeros(bbox_target.size())  # [n_obj_cells x B, 5]
 
@@ -109,24 +110,27 @@ class Loss(torch.nn.Module):
             pred_xyxy[:, 2:4] = cur_bbox_pred[:, :2] / float(self.S) + 0.5 * cur_bbox_pred[:, 2:4]
 
             cur_bbox_target = bbox_target[i].view(-1, 5)  # [1, 5]
-            assert target.size() == torch.Size([1, 5])
+            assert cur_bbox_target.size() == torch.Size([1, 5])
 
             target_xyxy = torch.FloatTensor(cur_bbox_target.size())  # [1, 5]
             target_xyxy[:, :2] = cur_bbox_target[:, :2] / float(self.S) - 0.5 * cur_bbox_target[:, 2:4]
             target_xyxy[:, 2:4] = cur_bbox_target[:, :2] / float(self.S) + 0.5 * cur_bbox_target[:, 2:4]
 
-            iou = self._compute_iou(pred_xyxy[:, :4], target_xyxy[:, :4])  # [1, B]
+            iou = self._compute_iou(target_xyxy[:, :4], pred_xyxy[:, :4])  # [1, B]
+            print(f'IoU: {iou}\n')
             max_iou, max_iou_index = iou.max(1)         # [1,], [1,]
+            print(max_iou_index)
             max_iou_index = max_iou_index.data[0]       # []
 
             obj_response_mask[i+max_iou_index] = 1
-            obj_not_response_mask[i+max_iou_index] = 0
+            obj_response_target_mask[i] = 1
+            # obj_not_response_mask[i+max_iou_index] = 0
 
             bbox_target_iou[i+max_iou_index, 4] = max_iou.data[0]
 
         # Bounding box coordinates, sizes and confidence loss for the responsible boxes
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
-        bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
+        bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
         target_iou = bbox_target_iou[obj_response_mask].view(-1, 5)
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
@@ -140,12 +144,56 @@ class Loss(torch.nn.Module):
 
         # Final loss
         loss = self.lambda_coord * (loss_xy + loss_wh) + loss_conf + self.lambda_noobj * loss_noobj + loss_class
+        print(f'Coordinates loss: {loss_xy}\nWidth/Height loss: {loss_wh}\nConfidence loss: {loss_conf}\n'
+              f'No object loss: {loss_noobj}\nClass probabilities loss: {loss_class}')
+
         loss = loss / self._N
 
         return loss
 
 
+def test_loss():
+    x = torch.zeros((1, 11, 6, 6), dtype=torch.float32)
+    y = torch.zeros((1, 11, 6, 6))
+    y[:, 0:2, 2, 2] = 0.5
+    y[:, 2:4, 2, 2] = 0.5
+    y[:, 4, 2, 2] = 1.0
+    y[:, 10, 2, 2] = 1.0
 
+    x[:, 0:2, 2, 2] = 0.0
+    x[:, 2:4, 2, 2] = 1 / 3
+    x[:, 4, 2, 2] = 4 / 9
+    x[:, 5:7, 2, 2] = 1.0
+    x[:, 7:9, 2, 2] = 1 / 3
+
+    x[:, 10, 2, 2] = 1.0
+
+    loss = Loss(6, 2, 1)
+    loss.forward(x, y)
+
+
+def test_iou():
+    loss = Loss(6, 2, 1)
+    x = torch.zeros((2, 4), dtype=torch.float32)
+    y = torch.zeros((1, 4), dtype=torch.float32)
+    x[0, 0] = 1
+    x[0, 1] = 1
+    x[0, 2] = 3
+    x[0, 3] = 3
+    x[1, 0] = 2
+    x[1, 1] = 2
+    x[1, 2] = 4
+    x[1, 3] = 4
+
+    y[0, 0] = 1
+    y[0, 1] = 1
+    y[0, 2] = 4
+    y[0, 3] = 4
+
+    print(loss._compute_iou(y, x))
+
+
+test_loss()
 
 
 
