@@ -2,7 +2,7 @@ import torch
 from yolo_model import TinyYolo
 from torchvision import transforms
 from utils.logger import Logger
-from utils.datasets import DetectDataset
+from utils.datasets import DetectionDataset
 """Initiate logger"""
 logger = Logger('Yolo')
 
@@ -19,7 +19,7 @@ test_transforms = transforms.Compose([
     transforms.ToTensor()
 ])
 
-a = DetectDataset()
+a = DetectionDataset()
 for i in range(len(a)):
     sample = a[i]
     print(i, sample[1])
