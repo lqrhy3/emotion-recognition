@@ -97,22 +97,22 @@ class Loss(torch.nn.Module):
         bbox_pred = obj_pred[:, :5*self.B].contiguous().view(-1, 5)      # [n_obj_cells x B, 5]
 
         obj_response_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
-        obj_response_target_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
-        # obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.uint8)  # [n_obj_cells x B, 5]
+        # obj_response_target_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
+        obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.uint8)  # [n_obj_cells x B, 5]
 
         bbox_target_iou = torch.zeros(bbox_target.size())  # [n_obj_cells x B, 5]
 
         for i in range(0, bbox_target.size(0), self.B):
             cur_bbox_pred = bbox_pred[i:i + self.B]  # [B, 5]
 
-            pred_xyxy = torch.FloatTensor(cur_bbox_pred.size())  # [B, 5]
+            pred_xyxy = torch.empty(cur_bbox_pred.size(), dtype=torch.float, requires_grad=True)  # [B, 5]
             pred_xyxy[:, :2] = cur_bbox_pred[:, :2] / float(self.S) - 0.5 * cur_bbox_pred[:, 2:4]
             pred_xyxy[:, 2:4] = cur_bbox_pred[:, :2] / float(self.S) + 0.5 * cur_bbox_pred[:, 2:4]
 
             cur_bbox_target = bbox_target[i].view(-1, 5)  # [1, 5]
             assert cur_bbox_target.size() == torch.Size([1, 5])
 
-            target_xyxy = torch.FloatTensor(cur_bbox_target.size())  # [1, 5]
+            target_xyxy = torch.empty(cur_bbox_target.size(), dtype=torch.float, requires_grad=True)  # [1, 5]
             target_xyxy[:, :2] = cur_bbox_target[:, :2] / float(self.S) - 0.5 * cur_bbox_target[:, 2:4]
             target_xyxy[:, 2:4] = cur_bbox_target[:, :2] / float(self.S) + 0.5 * cur_bbox_target[:, 2:4]
 
@@ -123,14 +123,16 @@ class Loss(torch.nn.Module):
             max_iou_index = max_iou_index.data[0]       # []
 
             obj_response_mask[i+max_iou_index] = 1
-            obj_response_target_mask[i] = 1
-            # obj_not_response_mask[i+max_iou_index] = 0
+            # obj_response_target_mask[i] = 1
+            obj_not_response_mask[i+max_iou_index] = 0
 
             bbox_target_iou[i+max_iou_index, 4] = max_iou.data[0]
 
+        bbox_target_iou = bbox_target_iou.clone().detach().requires_grad_(True)
         # Bounding box coordinates, sizes and confidence loss for the responsible boxes
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
-        bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
+        bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
+        # bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
         target_iou = bbox_target_iou[obj_response_mask].view(-1, 5)
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
@@ -150,51 +152,3 @@ class Loss(torch.nn.Module):
         loss = loss / self._N
 
         return loss
-
-
-def test_loss():
-    x = torch.zeros((1, 11, 6, 6), dtype=torch.float32)
-    y = torch.zeros((1, 11, 6, 6))
-    y[:, 0:2, 2, 2] = 0.5
-    y[:, 2:4, 2, 2] = 0.5
-    y[:, 4, 2, 2] = 1.0
-    y[:, 10, 2, 2] = 1.0
-
-    x[:, 0:2, 2, 2] = 0.0
-    x[:, 2:4, 2, 2] = 1 / 3
-    x[:, 4, 2, 2] = 4 / 9
-    x[:, 5:7, 2, 2] = 1.0
-    x[:, 7:9, 2, 2] = 1 / 3
-
-    x[:, 10, 2, 2] = 1.0
-
-    loss = Loss(6, 2, 1)
-    loss.forward(x, y)
-
-
-def test_iou():
-    loss = Loss(6, 2, 1)
-    x = torch.zeros((2, 4), dtype=torch.float32)
-    y = torch.zeros((1, 4), dtype=torch.float32)
-    x[0, 0] = 1
-    x[0, 1] = 1
-    x[0, 2] = 3
-    x[0, 3] = 3
-    x[1, 0] = 2
-    x[1, 1] = 2
-    x[1, 2] = 4
-    x[1, 3] = 4
-
-    y[0, 0] = 1
-    y[0, 1] = 1
-    y[0, 2] = 4
-    y[0, 3] = 4
-
-    print(loss._compute_iou(y, x))
-
-
-test_loss()
-
-
-
-
