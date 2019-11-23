@@ -1,6 +1,7 @@
 import cv2
 import os
 import json
+from utils.utils import xywh2xyxy
 
 
 def show_target_images(images_path='images/',
@@ -24,16 +25,6 @@ def show_rectangle(image, rectangular, name='image', color=(0, 0, 0), thickness=
     cv2.waitKey(0)
 
 
-def xywh2xyxy(coord):
-    """Convert face recrtangle coordinates
-    [x_center, y_center, width, height] -> [x_rt, y_rt, x_lb, y_lb]
-    """
-    new_coord = [i for i in range(len(coord))]
-    new_coord[0] = coord[0] - coord[2] // 2
-    new_coord[1] = coord[1] - coord[3] // 2
-    new_coord[2] = coord[0] + coord[2] // 2
-    new_coord[3] = coord[1] + coord[3] // 2
-    return new_coord
 
 
 show_target_images()
