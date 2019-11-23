@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 
 class Loss(torch.nn.Module):
-    def __init__(self, grid_size, num_bboxes, num_classes, lambda_coord=5.0, lambda_noobj=0.5):
+    def __init__(self, grid_size, num_bboxes, num_classes=1, lambda_coord=5.0, lambda_noobj=0.5):
         super(Loss, self).__init__()
 
         self.S = grid_size
@@ -83,7 +83,7 @@ class Loss(torch.nn.Module):
         noobj_target = listed_target[noobj_mask].view(-1, 5*self.B+self.C)  # [n_noobj_cells, 5xB+C]
 
         # Compute loss for cells which have no objects
-        conf_mask = torch.zeros(noobj_target.size(), dtype=torch.uint8)  # [n_noobj_cells, 5xB+C]
+        conf_mask = torch.zeros(noobj_target.size(), dtype=torch.bool)  # [n_noobj_cells, 5xB+C]
         for b in range(self.B):
             conf_mask[:, 4 + 5 * b] = 1
         noobj_pred_conf = noobj_pred[conf_mask]      # [n_noobj_cells x B, ] confidence for each box
@@ -96,9 +96,9 @@ class Loss(torch.nn.Module):
         assert bbox_target.size() == torch.Size([obj_target.size(0)*self.B, 5])
         bbox_pred = obj_pred[:, :5*self.B].contiguous().view(-1, 5)      # [n_obj_cells x B, 5]
 
-        obj_response_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
+        obj_response_mask = torch.zeros(bbox_target.size(), dtype=torch.bool)     # [n_obj_cells x B, 5]
         # obj_response_target_mask = torch.zeros(bbox_target.size(), dtype=torch.uint8)     # [n_obj_cells x B, 5]
-        obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.uint8)  # [n_obj_cells x B, 5]
+        obj_not_response_mask = torch.ones(bbox_target.size(), dtype=torch.bool)  # [n_obj_cells x B, 5]
 
         bbox_target_iou = torch.zeros(bbox_target.size())  # [n_obj_cells x B, 5]
 
@@ -117,9 +117,8 @@ class Loss(torch.nn.Module):
             target_xyxy[:, 2:4] = cur_bbox_target[:, :2] / float(self.S) + 0.5 * cur_bbox_target[:, 2:4]
 
             iou = self._compute_iou(target_xyxy[:, :4], pred_xyxy[:, :4])  # [1, B]
-            print(f'IoU: {iou}\n')
+            # print(f'IoU: {iou}\n')
             max_iou, max_iou_index = iou.max(1)         # [1,], [1,]
-            print(max_iou_index)
             max_iou_index = max_iou_index.data[0]       # []
 
             obj_response_mask[i+max_iou_index] = 1

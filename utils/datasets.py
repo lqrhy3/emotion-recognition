@@ -39,12 +39,10 @@ class DetectionDataset(Dataset):
                                     labels=['face'])
             img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
 
-        target = utils.to_yolo_target(face_rect, img.size(0), self.S, self.B)
+        target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
         img = transforms.ImageToTensor()(img)
 
         return img, target
 
     def __len__(self):
         return len(self.img_names)
-
-

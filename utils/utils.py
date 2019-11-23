@@ -67,5 +67,3 @@ def to_yolo_target(bbox, image_w, grid_size=6, num_bboxes=2):
     target = torch.cat([*[target_bboxes]*num_bboxes, target_probabilities], dim=0)
 
     return target
-
-

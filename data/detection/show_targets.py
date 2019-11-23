@@ -22,4 +22,3 @@ def show_rectangle(image, rectangular, name='image', color=(0, 0, 0), thickness=
     img = cv2.rectangle(image, (rectangular[0], rectangular[1]), (rectangular[2], rectangular[3]), color, thickness)
     cv2.imshow(name, img)
     cv2.waitKey(0)
-
