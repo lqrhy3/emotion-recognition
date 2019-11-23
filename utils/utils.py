@@ -10,7 +10,7 @@ def xywh2xyxy(coord):
     Return:
         (numpy.array)
     """
-    new_coord = np.empty((4,))
+    new_coord = np.empty((4,), dtype=np.int)
     new_coord[0] = coord[0] - coord[2] // 2
     new_coord[1] = coord[1] - coord[3] // 2
     new_coord[2] = coord[0] + coord[2] // 2
@@ -26,7 +26,7 @@ def xyxy2xywh(coord):
         Return:
             (numpy.array)
         """
-    new_coord = np.empty((4,))
+    new_coord = np.empty((4,), dtype=np.int)
     new_coord[0] = (coord[2] + coord[0]) // 2
     new_coord[1] = (coord[3] + coord[1]) // 2
     new_coord[2] = coord[2] - coord[0]

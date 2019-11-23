@@ -3,10 +3,10 @@ import torch.nn.functional as F
 
 
 class Loss(torch.nn.Module):
-    def __init__(self, grid_cell_size, num_bboxes, num_classes, lambda_coord=5.0, lambda_noobj=0.5):
+    def __init__(self, grid_size, num_bboxes, num_classes, lambda_coord=5.0, lambda_noobj=0.5):
         super(Loss, self).__init__()
 
-        self.S = grid_cell_size
+        self.S = grid_size
         self.B = num_bboxes
         self.C = num_classes
         self.lambda_coord = lambda_coord
@@ -146,8 +146,6 @@ class Loss(torch.nn.Module):
 
         # Final loss
         loss = self.lambda_coord * (loss_xy + loss_wh) + loss_conf + self.lambda_noobj * loss_noobj + loss_class
-        print(f'Coordinates loss: {loss_xy}\nWidth/Height loss: {loss_wh}\nConfidence loss: {loss_conf}\n'
-              f'No object loss: {loss_noobj}\nClass probabilities loss: {loss_class}')
 
         loss = loss / self._N
 
