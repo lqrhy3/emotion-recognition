@@ -28,10 +28,10 @@ class Logger:
         msg += comment + '\n'
         msg += 'Start training:\n'
         if optim:
-            msg += 'Optimizer: ' + str(optim.__class__).split('.')[-1][:-2] + '\n'
+            msg += 'Optimizer: ' + str(optim.__class__.__name__) + '\n'
             msg += str(optim.state_dict()['param_groups'][0]) + '\n'
         if scheduler:
-            msg += 'Scheduler: ' + str(scheduler.__class__).split('.')[-1][:-2] + '\n'
+            msg += 'Scheduler: ' + str(scheduler.__class__.__name__) + '\n'
             msg += str(scheduler.state_dict()) + '\n'
         self.logger.info(msg)
 

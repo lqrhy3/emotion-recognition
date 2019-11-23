@@ -19,7 +19,7 @@ def show_target_images(images_path='images/',
 
 
 def show_rectangle(image, rectangular, name='image', color=(0, 0, 0), thickness=5):
-    img = cv2.circle(image, (rectangular[0], rectangular[1]), 2, 20)
-    img = cv2.rectangle(img, (rectangular[0], rectangular[1]), (rectangular[2], rectangular[3]), color, thickness)
+    img = cv2.rectangle(image, (rectangular[0], rectangular[1]), (rectangular[2], rectangular[3]), color, thickness)
     cv2.imshow(name, img)
     cv2.waitKey(0)
+
