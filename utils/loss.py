@@ -117,7 +117,6 @@ class Loss(torch.nn.Module):
             target_xyxy[:, 2:4] = cur_bbox_target[:, :2] / float(self.S) + 0.5 * cur_bbox_target[:, 2:4]
 
             iou = self._compute_iou(target_xyxy[:, :4], pred_xyxy[:, :4])  # [1, B]
-            # print(f'IoU: {iou}\n')
             max_iou, max_iou_index = iou.max(1)         # [1,], [1,]
             max_iou_index = max_iou_index.data[0]       # []
 
@@ -144,6 +143,8 @@ class Loss(torch.nn.Module):
         loss_class = F.mse_loss(class_pred, class_target, reduction='sum')
 
         # Final loss
+        print(f'Coordinates loss: {loss_xy}\nWidth/Height loss: {loss_wh}\nConfidence loss: {loss_conf}\n'
+              f'No object loss: {loss_noobj}\nClass probabilities loss: {loss_class}')
         loss = self.lambda_coord * (loss_xy + loss_wh) + loss_conf + self.lambda_noobj * loss_noobj + loss_class
 
         loss = loss / self._N

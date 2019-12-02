@@ -15,10 +15,12 @@ def show_target_images(images_path='images/',
         name = image_name[:16]
         points = xywh2xyxy(markup[name])
         img = cv2.imread(images_path + image_name)
-        show_rectangle(img, points, name=name, color=color, thickness=thickness)
+        show_rectangles(img, [points], name=name, color=color, thickness=thickness)
 
 
-def show_rectangle(image, rectangular, name='image', color=(0, 0, 0), thickness=5):
-    img = cv2.rectangle(image, (rectangular[0], rectangular[1]), (rectangular[2], rectangular[3]), color, thickness)
+def show_rectangles(image, rectangles, name='image', color=(0, 0, 0), thickness=5):
+    img = image
+    for rectangle in rectangles:
+        img = cv2.rectangle(img, (rectangle[0], rectangle[1]), (rectangle[2], rectangle[3]), color, thickness)
     cv2.imshow(name, img)
     cv2.waitKey(0)

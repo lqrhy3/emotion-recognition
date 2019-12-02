@@ -55,5 +55,5 @@ class TinyYolo(nn.Module):
         x = self.fc(x)
         x = self.sigmoid(x)
 
-        x = x.view(-1, self.S, self.S, 5 * self.B + self.C)
+        x = x.view(-1, 5 * self.B + self.C, self.S, self.S)
         return x
