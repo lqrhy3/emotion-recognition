@@ -32,7 +32,8 @@ class TinyYolo(nn.Module):
                 out_channels=out_channels,
                 kernel_size=3,
                 stride=1,
-                padding=1
+                padding=1,
+                bias=False
             )
         )
         layers.append(nn.BatchNorm2d(num_features=out_channels))

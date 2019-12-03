@@ -96,11 +96,11 @@ def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
     for cell_idx in product(list(range(grid_size)), repeat=2):
         x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
         has_object = int(listed_target[k, 4] > 0)
-        listed_target[k:k+2, 0] = (listed_target[k:k+2, 0] * cell_size + x_bias) * has_object
-        listed_target[k:k+2, 1] = (listed_target[k:k+2, 1] * cell_size + y_bias) * has_object
-        listed_target[k:k+2, 2:4] = listed_target[k:k+2, 2:4] * image_w * has_object
+        listed_target[k:k+num_bboxes, 0] = (listed_target[k:k+num_bboxes, 0] * cell_size + x_bias) * has_object
+        listed_target[k:k+num_bboxes, 1] = (listed_target[k:k+num_bboxes, 1] * cell_size + y_bias) * has_object
+        listed_target[k:k+num_bboxes, 2:4] = listed_target[k:k+num_bboxes, 2:4] * image_w * has_object
 
-        k += 2
+        k += num_bboxes
 
     res = listed_target.detach().numpy()
     return res

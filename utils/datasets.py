@@ -31,12 +31,10 @@ class DetectionDataset(Dataset):
         img_name = os.path.join(self.datadir, self.img_names[idx])
         img = cv2.imread(img_name)
 
-        face_rect = self.markup[self.img_names[idx][:16]]
+        face_rect = np.array(self.markup[self.img_names[idx][:16]])
 
         if self.transform:
-            sample = self.transform(image=img,
-                                    bboxes=[utils.xywh2xyxy(face_rect)],
-                                    labels=['face'])
+            sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
             img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
 
         target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
