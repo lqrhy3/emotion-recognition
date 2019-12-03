@@ -143,10 +143,10 @@ class Loss(torch.nn.Module):
         loss_class = F.mse_loss(class_pred, class_target, reduction='sum')
 
         # Final loss
-        print(f'Coordinates loss: {loss_xy}\nWidth/Height loss: {loss_wh}\nConfidence loss: {loss_conf}\n'
-              f'No object loss: {loss_noobj}\nClass probabilities loss: {loss_class}')
         loss = self.lambda_coord * (loss_xy + loss_wh) + loss_conf + self.lambda_noobj * loss_noobj + loss_class
-
         loss = loss / self._N
 
-        return loss
+        logger_loss = {'Coordinates loss': loss_xy.item() / self._N, 'Width/Height loss': loss_wh.item() / self._N,
+                       'Confidence loss': loss_conf.item() / self._N, 'No object loss': loss_noobj.item() / self._N,
+                        'Class probabilities loss': loss_class.item() / self._N, 'Total loss': loss.item()}
+        return loss, logger_loss

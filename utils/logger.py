@@ -21,20 +21,36 @@ class Logger:
 
         self.date_format = '%Y-%m-%d %H:%M'
 
-    def start_info(self, optim=None, scheduler=None, comment=''):
+    def start_info(self, hyperparameters=None, optim=None, scheduler=None, transforms=None, comment=''):
         today = datetime.datetime.today()
-        msg = '\n...........\n'
+        msg = '\n................................\n'
         msg += '[' + today.strftime(self.date_format) + '] '
         msg += comment + '\n'
-        msg += 'Start training:\n'
+        msg += 'Train info:\n'
+        msg += '___\n'
+
+        if hyperparameters:
+            msg += 'Hyperparameters:\n'
+            for key in hyperparameters:
+                msg += key + ': ' + str(hyperparameters[key]) + '\n'
+            msg += '___\n'
         if optim:
             msg += 'Optimizer: ' + str(optim.__class__.__name__) + '\n'
             msg += str(optim.state_dict()['param_groups'][0]) + '\n'
+            msg += '___\n'
         if scheduler:
             msg += 'Scheduler: ' + str(scheduler.__class__.__name__) + '\n'
             msg += str(scheduler.state_dict()) + '\n'
+            msg += '___\n'
+
+        if transforms:
+            msg += 'Train transformations:\n'
+            msg += transforms.__str__()[transforms.__str__().find('[')+1:transforms.__str__().find(']')].strip() + '\n'
+            msg += '___'
         self.logger.info(msg)
 
     def epoch_info(self, epoch, train_loss):
-        msg = 'Epoch: ' + str(epoch) + ' Train loss: ' + str(train_loss)
+        msg = 'Epoch: ' + str(epoch) + '\n'  # + '  Total loss: ' + str(train_loss['Total loss']) + '\n'
+        for key in train_loss:
+            msg += '\t' + key + ': ' + str(train_loss[key]) + '\n'
         self.logger.info(msg)
