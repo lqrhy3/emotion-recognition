@@ -19,10 +19,11 @@ train_transforms = albumentations.Compose([
 ], bbox_params=albumentations.BboxParams(format='pascal_voc', label_fields=['labels']))
 
 dataset = DetectionDataset(transform=train_transforms)
-dataloader = DataLoader(dataset, shuffle=False, batch_size=1)
+dataloader = DataLoader(dataset, shuffle=True, batch_size=1)
 
 image, target = next(iter(dataloader))
 output = model(image)
 idx = get_object_cell(target)
-show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)), xywh2xyxy(from_yolo_target(output[:, :10, :, :],
-                image.size(2))[(idx[0]*6 + idx[1])*2:(idx[0]*6 + idx[1])*2 + 2, :4]))
+# print(output)
+yolo_output = from_yolo_target(output[:, :10, :, :], image.size(2))[(idx[0]*6 + idx[1])*2:(idx[0]*6 + idx[1])*2 + 2, :]
+show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)), xywh2xyxy(yolo_output[:, :4]), yolo_output[:, 4])
