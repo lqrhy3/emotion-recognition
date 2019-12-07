@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from collections import Counter
 
 
 class Loss(torch.nn.Module):
@@ -131,7 +132,7 @@ class Loss(torch.nn.Module):
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
         bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
         # bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
-        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5)
+        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).cuda()
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
         loss_wh = F.mse_loss(bbox_pred_response[:, 2:4], bbox_target_response[:, 2:4], reduction='sum')
@@ -148,5 +149,6 @@ class Loss(torch.nn.Module):
 
         logger_loss = {'Coordinates loss': loss_xy.item() / self._N, 'Width/Height loss': loss_wh.item() / self._N,
                        'Confidence loss': loss_conf.item() / self._N, 'No object loss': loss_noobj.item() / self._N,
-                        'Class probabilities loss': loss_class.item() / self._N, 'Total loss': loss.item()}
+                       'Class probabilities loss': loss_class.item() / self._N, 'Total loss': loss.item()}
+        logger_loss = Counter(logger_loss)
         return loss, logger_loss

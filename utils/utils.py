@@ -109,3 +109,7 @@ def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
 def get_object_cell(target):
     res = (target[:, 4, :, :] == 1).nonzero().squeeze(0)
     return res[1:].detach().numpy()
+
+
+def get_max_confidence(output):
+    pass
