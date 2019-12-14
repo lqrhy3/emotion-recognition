@@ -45,9 +45,9 @@ dataloader = DataLoader(dataset, shuffle=True, batch_size=batch_size)
 loss = Loss(grid_size=grid_size, num_bboxes=num_bboxes)
 
 
-# logger.start_info(optim=optim, hyperparameters={'n_epoch': n_epoch, 'batch_size': batch_size,
-#                                                 'grid_size': grid_size, 'num_bboxes': num_bboxes},
-#                   transforms=train_transforms, comment='TinyYOLO last try')
+logger.start_info(optim=optim, hyperparameters={'n_epoch': n_epoch, 'batch_size': batch_size,
+                                                'grid_size': grid_size, 'num_bboxes': num_bboxes},
+                  transforms=train_transforms, comment='TinyYOLO last try')
 
 for epoch in range(n_epoch):
     epoch_loss = Counter()
@@ -68,14 +68,13 @@ for epoch in range(n_epoch):
         epoch_loss += logger_loss
 
     epoch_loss = Counter({key: value / (i + 1) for key, value in epoch_loss.items()})
-    # logger.epoch_info(epoch=epoch, train_loss=epoch_loss)
+    logger.epoch_info(epoch=epoch, train_loss=epoch_loss)
 
-    # if epoch % 5 == 0:
-    #     torch.save({
-    #         'epoch': epoch,
-    #         'model_state_dict': model.state_dict(),
-    #         'optim_state_dict': optim.state_dict(),
-    #         'loss': loss_value.item()
-    #     }, os.path.join(PATH_TO_SAVE, 'checkpoint_show.pt'))
-    #     logger.logger.info('!Checkpoint created!')
-
+    if epoch % 5 == 0:
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optim_state_dict': optim.state_dict(),
+            'loss': loss_value.item()
+        }, os.path.join(PATH_TO_SAVE, 'checkpoint_show.pt'))
+        logger.logger.info('!Checkpoint created!')
