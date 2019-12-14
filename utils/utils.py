@@ -52,7 +52,7 @@ def xyxy2xywh(coord):
     return new_coord
 
 
-def to_yolo_target(bbox, image_w, grid_size=6, num_bboxes=2):
+def to_yolo_target(bbox, image_w, grid_size, num_bboxes=2):
     """Convert image and bounding box to YOLO target format
     Args:
         bbox: (Tensor) [x, y, w, h]
@@ -109,7 +109,3 @@ def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
 def get_object_cell(target):
     res = (target[:, 4, :, :] == 1).nonzero().squeeze(0)
     return res[1:].detach().numpy()
-
-
-def get_max_confidence(output):
-    pass

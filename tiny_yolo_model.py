@@ -3,11 +3,11 @@ from torch import nn
 
 class TinyYolo(nn.Module):
     """Tiny YOLOv1 model. 12.3 millions trainable parametrs. Input = (3, 384, 384)"""
-    def __init__(self):
+    def __init__(self, grid_size, num_bboxes, n_classes=1):
         super(TinyYolo, self).__init__()
-        self.S = 6   # grid size
-        self.B = 2   # number of bbox
-        self.C = 1   # number of classes
+        self.S = grid_size   # grid size
+        self.B = num_bboxes   # number of bbox
+        self.C = n_classes   # number of classes
 
         self.layer1 = self._make_conv_block(in_channels=3, out_channels=16)
         self.layer2 = self._make_conv_block(in_channels=16)

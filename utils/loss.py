@@ -2,6 +2,8 @@ import torch
 import torch.nn.functional as F
 from collections import Counter
 
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
 
 class Loss(torch.nn.Module):
     def __init__(self, grid_size, num_bboxes, num_classes=1, lambda_coord=5.0, lambda_noobj=0.5):
@@ -89,7 +91,7 @@ class Loss(torch.nn.Module):
             conf_mask[:, 4 + 5 * b] = 1
         noobj_pred_conf = noobj_pred[conf_mask]      # [n_noobj_cells x B, ] confidence for each box
         noobj_target_conf = noobj_target[conf_mask]  # [n_noobj_cells x B, ]
-        assert noobj_target_conf.size(0) == noobj_target.size(0) * 2
+        assert noobj_target_conf.size(0) == noobj_target.size(0) * self.B
         loss_noobj = F.mse_loss(noobj_pred_conf, noobj_target_conf, reduction='sum')
 
         # Compute loss for cells which contain objects
@@ -132,7 +134,7 @@ class Loss(torch.nn.Module):
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
         bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
         # bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
-        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).cuda()
+        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).to(device)
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
         loss_wh = F.mse_loss(bbox_pred_response[:, 2:4], bbox_target_response[:, 2:4], reduction='sum')
