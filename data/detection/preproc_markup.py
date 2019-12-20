@@ -35,7 +35,7 @@ def prepoc_markup():
 def facerect_preproc(coord):
     """Convert face rectangle coordinates
     Args:
-        coord: [x_rt, y_rt, w, h]
+        coord: [x_lt, y_lt, w, h]
     Returns:
         [x_center, y_center, w, h]
             """

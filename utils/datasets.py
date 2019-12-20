@@ -13,7 +13,7 @@ class DetectionDataset(Dataset):
     dir_ = os.path.dirname(__file__)
 
     def __init__(self, grid_size=6, num_bboxes=2, path='../data/detection/', transform=None):
-        self.datadir = os.path.join(self.dir_, path, 'images')
+        self.datadir = os.path.join(self.dir_, path, 'train_images')
         self.img_names = np.array(os.listdir(self.datadir))
         self.markup_dir = os.path.join(self.dir_, path, 'data_markup.txt')
         self.transform = transform
@@ -35,12 +35,14 @@ class DetectionDataset(Dataset):
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
-            img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
+            #img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
+            img, face_rect = sample['image'], sample['bboxes'][0]
 
-        target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
+        #target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
+        target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
         img = transforms.ImageToTensor()(img)
 
-        return img, target
+        return img, target, torch.tensor(face_rect)
 
     def __len__(self):
         return len(self.img_names)

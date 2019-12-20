@@ -3,7 +3,7 @@ import datetime
 
 
 class Logger:
-    def __init__(self, name, format='%(message)s'):
+    def __init__(self, name, session_id='', format='%(message)s'):
         self.name = name
         self.format = format
         self.level = logging.INFO
@@ -12,7 +12,7 @@ class Logger:
 
         # Logger configuration
         self.formatter = logging.Formatter(self.format)
-        self.file_handler = logging.FileHandler('log/' + name + '.log')
+        self.file_handler = logging.FileHandler('log/' + session_id + '/' + name + '.log')
         self.stream_handler = logging.StreamHandler()
         self.stream_handler.setFormatter(self.formatter)
         self.file_handler.setFormatter(self.formatter)
@@ -49,8 +49,13 @@ class Logger:
             msg += '___'
         self.logger.info(msg)
 
-    def epoch_info(self, epoch, train_loss):
-        msg = 'Epoch: ' + str(epoch) + '\n'  # + '  Total loss: ' + str(train_loss['Total loss']) + '\n'
-        for key in train_loss:
-            msg += '\t' + key + ': ' + str(train_loss[key]) + '\n'
+    def epoch_info(self, epoch, loss, val_metrics, phase):
+        if phase == 'train':
+            msg = 'Epoch: ' + str(epoch) + '\n'
+            for key in loss:
+                msg += '\t' + key + ': ' + str(loss[key]) + '\n'
+        elif phase == 'val':
+            msg = 'Validation loss: '
+            msg += str(loss['Total loss']) + '\n'
+            msg += 'Validation IoU' + str(val_metrics) + '\n'
         self.logger.info(msg)

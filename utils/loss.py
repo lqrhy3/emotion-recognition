@@ -20,7 +20,7 @@ class Loss(torch.nn.Module):
         Compute IoU between ground truth bounding box corresponded to the cell
         and B predicted bonding boxes
         Args:
-             target_bbox: (Tensor) target bounding box, sized [1, 4]
+             target_bbox: (Tensor) target bounding box, sized [1, 4] (x_lt, y_lt, x_rb, y_rb)
              pred_bboxes: (Tensor) predicted bounding boxes, sized [B, 4]
         Returns:
             (Tensor) IoU with target bbox for every predicted bbox, sized [1, B]
@@ -134,7 +134,7 @@ class Loss(torch.nn.Module):
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
         bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
         # bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
-        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).to(device)
+        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).cuda()#to(device)
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
         loss_wh = F.mse_loss(bbox_pred_response[:, 2:4], bbox_target_response[:, 2:4], reduction='sum')

@@ -55,14 +55,13 @@ def xyxy2xywh(coord):
 def to_yolo_target(bbox, image_w, grid_size, num_bboxes=2):
     """Convert image and bounding box to YOLO target format
     Args:
-        bbox: (Tensor) [x, y, w, h]
+        bbox: (np.ndarray) [x, y, w, h]
         image_w: (int) image width
         grid_size: (int) number of cells in the grid
         num_bboxes: (int) number of predicted bounding boxes per cell
     Return:
         (Tensor) sized [5*B + C x S x S]
     """
-
     target_bboxes = torch.zeros((5, grid_size, grid_size))
 
     cell_size = image_w / grid_size
@@ -109,3 +108,10 @@ def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
 def get_object_cell(target):
     res = (target[:, 4, :, :] == 1).nonzero().squeeze(0)
     return res[1:].detach().numpy()
+
+
+def yolo_predict(output, grid_size, num_bboxes, img_size: int):
+    # output.size() == (N, 5*B+C, S, S)
+    listed_output = from_yolo_target(output[:, :10, :, :], img_size, grid_size=grid_size)
+    pred_output = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
+

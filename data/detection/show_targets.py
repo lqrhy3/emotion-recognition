@@ -4,7 +4,7 @@ import json
 from utils.utils import xywh2xyxy
 
 
-def show_target_images(images_path='images/',
+def show_target_images(images_path='train_images/',
                        markup_path='data_markup.txt',
                        color=(0, 0, 0),
                        thickness=5,
@@ -26,4 +26,4 @@ def show_rectangles(image, rectangles, confs=None, name='image', color=(0, 255, 
         img = cv2.rectangle(img, (rectangle[0], rectangle[1]), (rectangle[2], rectangle[3]), color, thickness)
         img = cv2.putText(img, str(conf), (rectangle[0], rectangle[1] + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), thickness)
     cv2.imshow(name, img)
-    cv2.waitKey(0)
+    # cv2.waitKey(0)
