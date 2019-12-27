@@ -10,7 +10,7 @@ import json
 
 class DetectionDataset(Dataset):
     """Face detection dataset.
-    Making custom dataset for detection task. Overloading __getitem__ and __len__ methods
+    Making custom dataset for detection task. Overriding __getitem__ and __len__ methods
     for torch.Dataloader compatibility.
     """
     dir_ = os.path.dirname(__file__)

@@ -21,7 +21,7 @@ def clean_markup():
 
 def prepoc_markup():
     """(Markup) metadata.txt -> data_markup.txt
-    Structure enhancment and coordinates converting
+    Structure enhancment and coordinates converting to (x_center, y_center. width, height)
     """
     with open('metadata.txt', 'r') as file:
         txt = json.load(file)
@@ -35,9 +35,9 @@ def prepoc_markup():
 def facerect_preproc(coord):
     """Convert face rectangle coordinates
     Args:
-        coord: [x_lt, y_lt, w, h]
+        coord: (x_lt, y_lt, w, h)
     Returns:
-        [x_center, y_center, w, h]
+        (x_center, y_center, w, h)
             """
     coord[0] = coord[0] + coord[2] // 2
     coord[1] = coord[1] + coord[3] // 2
