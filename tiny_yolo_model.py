@@ -3,7 +3,7 @@ from torch import nn
 
 class TinyYolo(nn.Module):
     """Tiny YOLOv1 model.
-    Constucting TinyYOLO network supporting grid cell size, number of bboxes per cell and number of classes modifying.
+    Constructing TinyYOLO network supporting grid cell size, number of bboxes per cell and number of classes modification.
     """
     def __init__(self, grid_size, num_bboxes, n_classes=1):
         super(TinyYolo, self).__init__()
@@ -25,7 +25,7 @@ class TinyYolo(nn.Module):
 
     @staticmethod
     def _make_conv_block(in_channels, out_channels=None):
-        """Making standart convolutional block.
+        """Making standard convolutional block.
         Convolution layer, next Batch normalization layer, next Max pooling layer, next Activation function.
         """
         if out_channels is None:
