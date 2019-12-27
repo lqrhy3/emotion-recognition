@@ -22,6 +22,10 @@ class Logger:
         self.date_format = '%Y-%m-%d %H:%M'
 
     def start_info(self, hyperparameters=None, optim=None, scheduler=None, transforms=None, comment=''):
+        """Logging external information about training.
+        Saving all hyperparameters, optimizer info, scheduler info, transfromations used,
+        start time and general comment.
+        """
         today = datetime.datetime.today()
         msg = '\n................................\n'
         msg += '[' + today.strftime(self.date_format) + '] '
@@ -50,6 +54,10 @@ class Logger:
         self.logger.info(msg)
 
     def epoch_info(self, epoch, loss, val_metrics, phase):
+        """Logging per epoch information.
+        Saving epoch number, all loss components and total loss during training phase
+        and validation loss, validation metrics during validation phase.
+        """
         if phase == 'train':
             msg = 'Epoch: ' + str(epoch) + '\n'
             for key in loss:

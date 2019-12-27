@@ -6,13 +6,13 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 import albumentations
 from utils.loss import Loss
 from collections import Counter
-from data.detection.show_targets import show_rectangles
 from utils.utils import from_yolo_target, xywh2xyxy
-from utils.utils import get_object_cell
 import os
 import datetime
 import numpy as np
 
+
+# Declaring constants for logging and creating dir for current experiment. Initiating logger.
 TEST = False
 PATH_TO_LOG = 'log'
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
@@ -22,22 +22,23 @@ if not TEST:
     os.mkdir(os.path.join(PATH_TO_LOG, SESSION_ID))
     logger = Logger('logger', session_id=SESSION_ID)
 
-"""Hyperparameters"""
+# Declaring hyperparameters
 n_epoch = 20
 batch_size = 14
 grid_size = 7
 num_bboxes = 2
 val_split = 0.03
 
-"""Initiate model"""
+# Initiating model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = TinyYolo(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
 
-"""Initiate optimizers"""
+# Initiating optimizer and scheduler for training steps
 # optim = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
 optim = torch.optim.Adam(model.parameters(), lr=0.0003, weight_decay=0.0005)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optim, [10], gamma=1.0)
 
+# Declaring augmentations for images and bboxes
 train_transforms = albumentations.Compose([
     albumentations.RandomSizedBBoxSafeCrop(height=448, width=448, always_apply=True),
     albumentations.HorizontalFlip(p=0.5),
@@ -45,6 +46,7 @@ train_transforms = albumentations.Compose([
 
 ], bbox_params=albumentations.BboxParams(format='pascal_voc', label_fields=['labels']))
 
+# Decalring dataset and creating dataloader for train and validation phase
 dataset = DetectionDataset(transform=train_transforms, grid_size=grid_size, num_bboxes=num_bboxes)
 
 dataset_len = len(dataset)
@@ -58,7 +60,7 @@ val_sampler = SubsetRandomSampler(val_idxs)
 train_dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size, sampler=train_sampler)
 val_dataloader = DataLoader(dataset, shuffle=False, batch_size=batch_size, sampler=val_sampler)
 
-
+# Declaring loss function
 loss = Loss(grid_size=grid_size, num_bboxes=num_bboxes)
 
 
@@ -67,6 +69,7 @@ if not TEST:
                                                     'grid_size': grid_size, 'num_bboxes': num_bboxes},
                       transforms=train_transforms, comment=COMMENT)
 
+# Training loop
 for epoch in range(n_epoch):
 
     for phase in ['train', 'val']:
@@ -89,30 +92,33 @@ for epoch in range(n_epoch):
                 output = model(image)
                 loss_value, logger_loss = loss(output, target)
                 if phase == 'train':
+                    # Parameters updating
                     loss_value.backward()
                     optim.step()
                     scheduler.step(epoch)
                 else:
+                    # Computing metrics at validation phase
                     face_rect.to(device)
-                    listed_output = from_yolo_target(output, 448, grid_size=grid_size, num_bboxes=num_bboxes)
+                    listed_output = from_yolo_target(output, image_w=+++448, grid_size=grid_size, num_bboxes=num_bboxes)
                     semi_pred = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
                     iou += loss._compute_iou(face_rect,
                                              torch.tensor(np.expand_dims(xywh2xyxy(semi_pred[:, :4]), axis=0)).to(device))
 
             epoch_loss += logger_loss
 
-
         epoch_loss = Counter({key: value / (i + 1) for key, value in epoch_loss.items()})
         iou = iou / (i + 1)
         if not TEST:
+            # Logging
             logger.epoch_info(epoch=epoch, loss=epoch_loss, val_metrics=iou, phase=phase)
 
             if phase == 'train' and epoch % 5 == 0:
+                # Checkpoint. Saving model, optimizer, scheduler and train info
                 torch.save({
                     'epoch': epoch,
                     'model_state_dict': model.state_dict(),
                     'optim_state_dict': optim.state_dict(),
                     'scheduler_state_dict': scheduler.state_dict(),
                     'loss': loss_value.item()
-                }, os.path.join(PATH_TO_LOG, SESSION_ID, 'checkpoint_show.pt'))
+                }, os.path.join(PATH_TO_LOG, SESSION_ID, 'checkpoint.pt'))
                 logger.logger.info('!Checkpoint created!')

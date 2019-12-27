@@ -87,19 +87,24 @@ def to_yolo_target(bbox, image_w, grid_size, num_bboxes=2):
 
 
 def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
-    listed_target = target[:, :5*num_bboxes, :, :].squeeze(0).view(1, 5*num_bboxes, grid_size*grid_size).\
+    batch_size = target.size(0)
+    listed_target = target[:, :5*num_bboxes, :, :].squeeze(0).view(1, 5*num_bboxes, grid_size*grid_size*batch_size).\
                                                     transpose(1, 2).contiguous().view(num_bboxes*grid_size*grid_size, 5)
 
-    cell_size = int(image_w / grid_size)
-    k = 0
-    for cell_idx in product(list(range(grid_size)), repeat=2):
-        x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
-        has_object = int(listed_target[k, 4] > 0)
-        listed_target[k:k+num_bboxes, 0] = (listed_target[k:k+num_bboxes, 0] * cell_size + x_bias) * has_object
-        listed_target[k:k+num_bboxes, 1] = (listed_target[k:k+num_bboxes, 1] * cell_size + y_bias) * has_object
-        listed_target[k:k+num_bboxes, 2:4] = listed_target[k:k+num_bboxes, 2:4] * image_w * has_object
+    for i in range(batch_size):
+        cell_size = int(image_w / grid_size)
+        k = 0
+        for cell_idx in product(list(range(grid_size)), repeat=2):
+            x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
+            has_object = int(listed_target[k, 4] > 0)
+            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 0] = \
+                (listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 0] * cell_size + x_bias) * has_object
+            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 1] = \
+                (listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 1] * cell_size + y_bias) * has_object
+            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 2:4] =\
+                listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 2:4] * image_w * has_object
 
-        k += num_bboxes
+            k += num_bboxes
 
     res = listed_target.detach().numpy()
     return res

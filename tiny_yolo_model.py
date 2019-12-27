@@ -2,7 +2,9 @@ from torch import nn
 
 
 class TinyYolo(nn.Module):
-    """Tiny YOLOv1 model. 12.3 millions trainable parametrs. Input = (3, 384, 384)"""
+    """Tiny YOLOv1 model.
+    Constucting TinyYOLO network supporting grid cell size, number of bboxes per cell and number of classes modifying.
+    """
     def __init__(self, grid_size, num_bboxes, n_classes=1):
         super(TinyYolo, self).__init__()
         self.S = grid_size   # grid size
@@ -23,6 +25,9 @@ class TinyYolo(nn.Module):
 
     @staticmethod
     def _make_conv_block(in_channels, out_channels=None):
+        """Making standart convolutional block.
+        Convolution layer, next Batch normalization layer, next Max pooling layer, next Activation function.
+        """
         if out_channels is None:
             out_channels = in_channels * 2
 
@@ -43,6 +48,7 @@ class TinyYolo(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        # Declaring forward pass of model
         x = x.float()
         x = self.layer1(x)
         x = self.layer2(x)
@@ -56,5 +62,6 @@ class TinyYolo(nn.Module):
         x = self.fc(x)
         x = self.sigmoid(x)
 
+        # Transfroming to YOLO output tensor
         x = x.view(-1, 5 * self.B + self.C, self.S, self.S)
         return x

@@ -9,10 +9,13 @@ import json
 
 
 class DetectionDataset(Dataset):
-    """Face detection dataset"""
+    """Face detection dataset.
+    Making custom dataset for detection task. Overloading __getitem__ and __len__ methods
+    for torch.Dataloader compatibility.
+    """
     dir_ = os.path.dirname(__file__)
 
-    def __init__(self, grid_size=6, num_bboxes=2, path='../data/detection/', transform=None):
+    def __init__(self, grid_size, num_bboxes, path='../data/detection/', transform=None):
         self.datadir = os.path.join(self.dir_, path, 'train_images')
         self.img_names = np.array(os.listdir(self.datadir))
         self.markup_dir = os.path.join(self.dir_, path, 'data_markup.txt')
@@ -25,6 +28,13 @@ class DetectionDataset(Dataset):
             self.markup = json.load(file)
 
     def __getitem__(self, idx):
+        """Converting .jpg image to torch format, passing it through transformations, modifying bbox respectively and
+        conctructing YOLO output tensor from it.
+        Returns:
+            (Tensor) Transformed image. Sized (3 x image_w x image_h)
+            (Tensor) YOLO format output. Sized (5*num_bboxes*num_classes x grid_size x grid_size)
+            (Tensor) Face rectangular coordinates. [x_lt, y_lt, x_rb, y_rb]
+        """
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
