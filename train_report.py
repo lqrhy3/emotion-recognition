@@ -4,7 +4,7 @@ import torch
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 
-PATH_TO_LOG = 'log/logger.log'
+PATH_TO_LOG = 'log/19.12.14_23-25/logger.log'
 
 coordinate_loss = []
 wh_loss = []
@@ -16,9 +16,7 @@ total_loss = []
 info = ''
 
 with open(PATH_TO_LOG, 'r') as f:
-    for number, line in enumerate(f):
-        if number in range(2, 10):
-            info += line
+    for line in f:
         # if line.find('Coordinates loss') != -1:
         #     coordinate_loss.append(float(line.split(':')[1]))
         # if line.find('Width/Height loss') != -1:

@@ -12,7 +12,7 @@ import time
 PATH_TO_MODEL = 'checkpoint_show.pt'
 
 model = TinyYolo(grid_size=7, num_bboxes=2, n_classes=1)
-load = torch.load(os.path.join('log/detection', '19.12.15_01-38', PATH_TO_MODEL))
+load = torch.load(os.path.join('log', '19.12.15_01-38', PATH_TO_MODEL))
 model.load_state_dict(load['model_state_dict'])
 
 
@@ -29,7 +29,7 @@ while cap.isOpened():
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
     output = model(image)
-    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=7)
+    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=7, num_bboxes=2)
     pred_output = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
     show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)),
                     np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), pred_output[:, 4])

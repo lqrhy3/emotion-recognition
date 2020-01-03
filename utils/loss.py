@@ -106,22 +106,22 @@ class Loss(torch.nn.Module):
         bbox_target_iou = torch.zeros(bbox_target.size())  # (n_obj_cells x B, 5)
 
         for i in range(0, bbox_target.size(0), self.B):
-            cur_bbox_pred = bbox_pred[i:i + self.B]  # [B, 5]
+            cur_bbox_pred = bbox_pred[i:i + self.B]  # (B, 5)
 
-            pred_xyxy = torch.empty(cur_bbox_pred.size(), dtype=torch.float, requires_grad=True)  # [B, 5]
+            pred_xyxy = torch.empty(cur_bbox_pred.size(), dtype=torch.float, requires_grad=True)  # (B, 5)
             pred_xyxy[:, :2] = cur_bbox_pred[:, :2] / float(self.S) - 0.5 * cur_bbox_pred[:, 2:4]
             pred_xyxy[:, 2:4] = cur_bbox_pred[:, :2] / float(self.S) + 0.5 * cur_bbox_pred[:, 2:4]
 
             cur_bbox_target = bbox_target[i].view(-1, 5)  # [1, 5]
             assert cur_bbox_target.size() == torch.Size([1, 5])
 
-            target_xyxy = torch.empty(cur_bbox_target.size(), dtype=torch.float, requires_grad=True)  # [1, 5]
+            target_xyxy = torch.empty(cur_bbox_target.size(), dtype=torch.float, requires_grad=True)  # (1, 5)
             target_xyxy[:, :2] = cur_bbox_target[:, :2] / float(self.S) - 0.5 * cur_bbox_target[:, 2:4]
             target_xyxy[:, 2:4] = cur_bbox_target[:, :2] / float(self.S) + 0.5 * cur_bbox_target[:, 2:4]
 
-            iou = self._compute_iou(target_xyxy[:, :4], pred_xyxy[:, :4])  # [1, B]
-            max_iou, max_iou_index = iou.max(1)         # [1,], [1,]
-            max_iou_index = max_iou_index.data[0]       # []
+            iou = self._compute_iou(target_xyxy[:, :4], pred_xyxy[:, :4])  # (1, B]
+            max_iou, max_iou_index = iou.max(1)         # (1,], (1,]
+            max_iou_index = max_iou_index.data[0]       # (]
 
             obj_response_mask[i+max_iou_index] = 1
             # obj_response_target_mask[i] = 1

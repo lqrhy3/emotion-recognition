@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 import albumentations
 from utils.loss import Loss
 from collections import Counter
-from utils.utils import from_yolo_target, xywh2xyxy
+from utils.utils import from_yolo_target, xywh2xyxy, compute_iou
 import os
 import datetime
 import numpy as np
@@ -24,7 +24,7 @@ if not TEST:
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
-n_epoch = 20
+n_epoch = 55
 batch_size = 14
 grid_size = 7
 num_bboxes = 2
@@ -66,8 +66,8 @@ loss = Loss(grid_size=grid_size, num_bboxes=num_bboxes)
 
 
 if not TEST:
-    logger.start_info(optim=optim, hyperparameters={'n_epoch': n_epoch, 'batch_size': batch_size,
-                                                    'grid_size': grid_size, 'num_bboxes': num_bboxes},
+    logger.start_info(optim=optim, scheduler=scheduler, hyperparameters={'n_epoch': n_epoch, 'batch_size': batch_size,
+                                                                         'grid_size': grid_size, 'num_bboxes': num_bboxes},
                       transforms=train_transforms, comment=COMMENT)
 
 # Training loop
@@ -100,10 +100,13 @@ for epoch in range(n_epoch):
                 else:
                     # Computing metrics at validation phase
                     face_rect.to(device)
-                    listed_output = from_yolo_target(output, image_w=448, grid_size=grid_size, num_bboxes=num_bboxes)
-                    semi_pred = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
-                    iou += loss._compute_iou(face_rect,
-                                             torch.tensor(np.expand_dims(xywh2xyxy(semi_pred[:, :4]), axis=0)).to(device))
+                    listed_output = torch.tensor(from_yolo_target(output, image_w=448, grid_size=grid_size, num_bboxes=num_bboxes))
+                    preds = torch.empty((listed_output.size(0), 5))
+                    idxs = torch.argmax(listed_output[:, :, 4], dim=1)
+                    for batch in range(listed_output.size(0)):
+                        preds[batch] = listed_output[batch, idxs[batch], ...]
+                    iou += compute_iou(face_rect,
+                                       torch.tensor(xywh2xyxy(preds[:, :4]), dtype=torch.float), num_bboxes=2).mean().detach().cpu().numpy()
 
             epoch_loss += logger_loss
 

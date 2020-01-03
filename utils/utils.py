@@ -86,27 +86,28 @@ def to_yolo_target(bbox, image_w, grid_size, num_bboxes=2):
     return target
 
 
-def from_yolo_target(target, image_w, grid_size=6, num_bboxes=2):
+def from_yolo_target(target, image_w, grid_size, num_bboxes):
     batch_size = target.size(0)
-    listed_target = target[:, :5*num_bboxes, :, :].squeeze(0).view(1, 5*num_bboxes, grid_size*grid_size*batch_size).\
-                                                    transpose(1, 2).contiguous().view(num_bboxes*grid_size*grid_size, 5)
+    listed_target = target[:, :5 * num_bboxes, :, :]
+    listed_target = listed_target.view(-1, 5 * num_bboxes, grid_size * grid_size)
+    listed_target = listed_target.transpose(1, 2).contiguous().view(-1, num_bboxes * grid_size * grid_size, 5)
 
-    for i in range(batch_size):
+    for batch in range(batch_size):
+        pos = 0
         cell_size = int(image_w / grid_size)
-        k = 0
         for cell_idx in product(list(range(grid_size)), repeat=2):
             x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
-            has_object = int(listed_target[k, 4] > 0)
-            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 0] = \
-                (listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 0] * cell_size + x_bias) * has_object
-            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 1] = \
-                (listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 1] * cell_size + y_bias) * has_object
-            listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 2:4] =\
-                listed_target[batch_size*i+k:batch_size*i+k+num_bboxes, 2:4] * image_w * has_object
+            has_object = int(listed_target[batch, pos, 4] > 0)
+            listed_target[batch, pos:pos + num_bboxes, 0] = \
+                (listed_target[batch, pos:pos + num_bboxes, 0] * cell_size + x_bias) * has_object
+            listed_target[batch, pos:pos + num_bboxes, 1] = \
+                (listed_target[batch, pos:pos + num_bboxes, 1] * cell_size + y_bias) * has_object
+            listed_target[batch, pos:pos + num_bboxes, 2:4] = \
+                listed_target[batch, pos:pos + num_bboxes, 2:4] * image_w * has_object
 
-            k += num_bboxes
+            pos += num_bboxes
 
-    res = listed_target.detach().numpy()
+    res = listed_target.detach().cpu().numpy()
     return res
 
 
@@ -115,8 +116,68 @@ def get_object_cell(target):
     return res[1:].detach().numpy()
 
 
-def yolo_predict(output, grid_size, num_bboxes, img_size: int):
-    # output.size() == (N, 5*B+C, S, S)
-    listed_output = from_yolo_target(output[:, :10, :, :], img_size, grid_size=grid_size)
-    pred_output = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
+def compute_iou(bbox_1, bbox_2, num_bboxes):
+    """Compute Intersection over Union
+    Compute IoU between ground truth bounding box corresponded to the cell
+    and B predicted bonding boxes
+    Args:
+         bbox_1: (Tensor) bounding box, sized (1, 4) [x_lt, y_lt, x_rb, y_rb]
+         bbox_2: (Tensor) bounding boxes, sized (B, 4)
+    Returns:
+        (Tensor) IoU with target bbox for every predicted bbox, sized (1, B)
+    """
+    xy_lt = torch.max(
+        bbox_1[:, :2],
+        bbox_2[:, :2]
+    )
 
+    xy_rb = torch.min(
+        bbox_1[:, 2:],
+        bbox_2[:, 2:]
+    )
+
+    intersection_wh = xy_rb - xy_lt
+    intersection_wh[intersection_wh < 0] = 0  # (1, B, 2)
+
+    intersection = intersection_wh[:, 1] * intersection_wh[:, 0]  # (1, B)
+
+    target_area = (bbox_1[:, 2] - bbox_1[:, 0]) * \
+                  (bbox_1[:, 3] - bbox_1[:, 1])  # (1, )
+    pred_area = (bbox_2[:, 2] - bbox_2[:, 0]) * \
+                (bbox_2[:, 3] - bbox_2[:, 1])  # (B, )
+    target_area = target_area
+    pred_area = pred_area
+    assert target_area.size() == pred_area.size()
+
+    union = target_area + pred_area - intersection  # (1, B)
+
+    iou = intersection / union  # (1, B)
+
+    return iou
+
+
+def get_prediction(yolo_output, image_w, grid_size, num_bboxes):
+    batch_size = yolo_output.size(0)
+    listed_target = yolo_output[:, :5 * num_bboxes, :, :]
+    listed_target = listed_target.view(-1, 5 * num_bboxes, grid_size * grid_size)
+    listed_target = listed_target.transpose(1, 2).contiguous().view(-1, num_bboxes * grid_size * grid_size, 5)
+
+    #
+    #
+    # k = 0
+    # for i in range(batch_size):
+    #     cell_size = int(image_w / grid_size)
+    #     for cell_idx in product(list(range(grid_size)), repeat=2):
+    #         x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
+    #         has_object = int(listed_target[k, 4] > 0)
+    #         listed_target[k:k + num_bboxes, 0] = \
+    #             (listed_target[k:k + num_bboxes, 0] * cell_size + x_bias) * has_object
+    #         listed_target[k:k + num_bboxes, 1] = \
+    #             (listed_target[k:k + num_bboxes, 1] * cell_size + y_bias) * has_object
+    #         listed_target[k:k + num_bboxes, 2:4] = \
+    #             listed_target[k:k + num_bboxes, 2:4] * image_w * has_object
+    #
+    #         k += num_bboxes
+    #
+    # res = listed_target.detach().cpu().numpy()
+    return listed_target

@@ -53,7 +53,7 @@ class DetectionDataset(Dataset):
         target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
         img = transforms.ImageToTensor()(img)
 
-        return img, target, torch.tensor(face_rect)
+        return img, target, torch.tensor(face_rect, dtype=torch.float)
 
     def __len__(self):
         return len(self.img_names)

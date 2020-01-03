@@ -51,7 +51,8 @@ class Logger:
 
         if transforms:
             msg += 'Train transformations:\n'
-            msg += transforms.__str__()[transforms.__str__().find('[')+1:transforms.__str__().find(']')].strip() + '\n'
+            for transform in transforms:
+                msg += transform.__str__() + '\n'
             msg += '___'
         self.logger.info(msg)
 
@@ -65,7 +66,7 @@ class Logger:
             for key in loss:
                 msg += '\t' + key + ': ' + str(loss[key]) + '\n'
         elif phase == 'val':
-            msg = 'Validation loss: '
+            msg = '\tValidation loss: '
             msg += str(loss['Total loss']) + '\n'
-            msg += 'Validation IoU' + str(val_metrics) + '\n'
+            msg += '\tValidation IoU: ' + str(val_metrics) + '\n'
         self.logger.info(msg)
