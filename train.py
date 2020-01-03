@@ -13,14 +13,15 @@ import numpy as np
 
 
 # Declaring constants for logging and creating dir for current experiment. Initiating logger.
+TASK = 'detection'  # detection or emorec
 TEST = False
-PATH_TO_LOG = 'log'
+PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'new trainer test'
 
 if not TEST:
     os.mkdir(os.path.join(PATH_TO_LOG, SESSION_ID))
-    logger = Logger('logger', session_id=SESSION_ID)
+    logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
 n_epoch = 20
@@ -99,7 +100,7 @@ for epoch in range(n_epoch):
                 else:
                     # Computing metrics at validation phase
                     face_rect.to(device)
-                    listed_output = from_yolo_target(output, image_w=+++448, grid_size=grid_size, num_bboxes=num_bboxes)
+                    listed_output = from_yolo_target(output, image_w=448, grid_size=grid_size, num_bboxes=num_bboxes)
                     semi_pred = np.expand_dims(listed_output[np.argmax(listed_output[:, 4]).item(), :], axis=0)
                     iou += loss._compute_iou(face_rect,
                                              torch.tensor(np.expand_dims(xywh2xyxy(semi_pred[:, :4]), axis=0)).to(device))

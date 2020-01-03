@@ -1,5 +1,6 @@
 import torch
 from torch.utils.data import Dataset
+from torchvision.datasets import folder
 from utils import utils
 from utils import transforms
 import os
@@ -45,10 +46,10 @@ class DetectionDataset(Dataset):
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
-            #img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
+            # img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
             img, face_rect = sample['image'], sample['bboxes'][0]
 
-        #target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
+        # target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
         target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
         img = transforms.ImageToTensor()(img)
 
@@ -56,3 +57,24 @@ class DetectionDataset(Dataset):
 
     def __len__(self):
         return len(self.img_names)
+
+
+class EmoRecDataset(folder.DatasetFolder):
+    def __init__(self, root, emotions=None, transform=None):
+        """
+        :param emotions:
+        List of emotions to use (should be name of foler)
+        """
+        super(EmoRecDataset, self).__init__(root, loader=folder.default_loader,
+                                            extensions=folder.IMG_EXTENSIONS, transform=transform)
+
+        if emotions is not None:
+            self.classes = emotions
+            self.class_to_idx = {self.classes[i]: i for i in range(len(self.classes))}
+
+        self.idx_to_class = {v: k for k, v in self.class_to_idx.items()}
+        self.samples = folder.make_dataset(self.root, self.class_to_idx, self.extensions)
+        self.targets = [s[1] for s in self.samples]
+        if len(self.samples) == 0:
+            raise (RuntimeError("Found 0 files in subfolders of: " + self.root + "\nSupported extensions are: " +
+                                ",".join(self.extensions)))

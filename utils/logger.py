@@ -1,18 +1,20 @@
 import logging
 import datetime
+import os
 
 
 class Logger:
-    def __init__(self, name, session_id='', format='%(message)s'):
+    def __init__(self, name, task='', session_id='', format='%(message)s'):
         self.name = name
         self.format = format
         self.level = logging.INFO
         self.logger = logging.getLogger(name)
         self.logger.setLevel(self.level)
+        self.path_to_log = os.path.join('log', task, session_id, name + '.log')
 
         # Logger configuration
         self.formatter = logging.Formatter(self.format)
-        self.file_handler = logging.FileHandler('log/' + session_id + '/' + name + '.log')
+        self.file_handler = logging.FileHandler(self.path_to_log)
         self.stream_handler = logging.StreamHandler()
         self.stream_handler.setFormatter(self.formatter)
         self.file_handler.setFormatter(self.formatter)
