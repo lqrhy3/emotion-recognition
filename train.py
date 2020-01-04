@@ -20,7 +20,7 @@ SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'new trainer test'
 
 if not TEST:
-    os.mkdir(os.path.join(PATH_TO_LOG, SESSION_ID))
+    os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
@@ -125,4 +125,4 @@ for epoch in range(n_epoch):
                     'scheduler_state_dict': scheduler.state_dict(),
                     'loss': loss_value.item()
                 }, os.path.join(PATH_TO_LOG, SESSION_ID, 'checkpoint.pt'))
-                logger.logger.info('!Checkpoint created!')
+                logger.info('!Checkpoint created!')

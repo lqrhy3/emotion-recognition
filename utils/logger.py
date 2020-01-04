@@ -70,3 +70,6 @@ class Logger:
             msg += str(loss['Total loss']) + '\n'
             msg += '\tValidation IoU: ' + str(val_metrics) + '\n'
         self.logger.info(msg)
+
+    def info(self, msg):
+        self.logger.info(msg)
