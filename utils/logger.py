@@ -56,19 +56,18 @@ class Logger:
             msg += '___'
         self.logger.info(msg)
 
-    def epoch_info(self, epoch, loss, val_metrics, phase):
+    def epoch_info(self, epoch, loss, val_metrics):
         """Logging per epoch information.
         Saving epoch number, all loss components and total loss during training phase
         and validation loss, validation metrics during validation phase.
         """
-        if phase == 'train':
-            msg = 'Epoch: ' + str(epoch) + '\n'
-            for key in loss:
-                msg += '\t' + key + ': ' + str(loss[key]) + '\n'
-        elif phase == 'val':
-            msg = '\tValidation loss: '
-            msg += str(loss['Total loss']) + '\n'
-            msg += '\tValidation IoU: ' + str(val_metrics) + '\n'
+        msg = 'Epoch: ' + str(epoch) + '\n'
+        for key in loss:
+            msg += '\t' + key + ': ' + str(loss[key]) + '\n'
+
+        msg = '\tValidation loss: '
+        msg += str(loss['Total loss']) + '\n'
+        msg += '\tValidation IoU: ' + str(val_metrics) + '\n'
         self.logger.info(msg)
 
     def info(self, msg):

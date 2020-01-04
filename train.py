@@ -97,6 +97,9 @@ for epoch in range(n_epoch):
                     loss_value.backward()
                     optim.step()
                     scheduler.step(epoch)
+
+                    epoch_loss += logger_loss
+
                 else:
                     # Computing metrics at validation phase
                     face_rect.to(device)
@@ -105,10 +108,9 @@ for epoch in range(n_epoch):
                     idxs = torch.argmax(listed_output[:, :, 4], dim=1)
                     for batch in range(listed_output.size(0)):
                         preds[batch] = listed_output[batch, idxs[batch], ...]
+
                     iou += compute_iou(face_rect,
                                        torch.tensor(xywh2xyxy(preds[:, :4]), dtype=torch.float), num_bboxes=2).mean().detach().cpu().numpy()
-
-            epoch_loss += logger_loss
 
         epoch_loss = Counter({key: value / (i + 1) for key, value in epoch_loss.items()})
         iou = iou / (i + 1)

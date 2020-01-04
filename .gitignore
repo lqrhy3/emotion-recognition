@@ -2,4 +2,3 @@ venv/
 .idea/
 __pycache__/
 tesst.py
-log/
