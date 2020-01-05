@@ -68,7 +68,8 @@ class Logger:
         msg += str(train_loss) + '\n'
         msg += '\tValidation loss: '
         msg += str(val_loss) + '\n'
-        msg += '\tValidation metric: ' + str(val_metric) + '\n'
+        msg += '\tValidation metric: '
+        msg += str(val_metric) + '\n'
         self.info(msg)
 
     def info(self, msg):
