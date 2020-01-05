@@ -23,6 +23,9 @@ class Logger:
 
         self.date_format = '%Y-%m-%d %H:%M'
 
+    def info(self, msg):
+        self.logger.info(msg)
+
     def start_info(self, hyperparameters=None, optim=None, scheduler=None, transforms=None, comment=''):
         """Logging external information about training.
         Saving all hyperparameters, optimizer info, scheduler info, transfromations used,
@@ -51,24 +54,23 @@ class Logger:
 
         if transforms:
             msg += 'Train transformations:\n'
+            if transforms.__class__.__module__.split('.')[0] == 'torchvision':
+                transforms = transforms.transforms
             for transform in transforms:
                 msg += transform.__str__() + '\n'
             msg += '___'
-        self.logger.info(msg)
+        self.info(msg)
 
-    def epoch_info(self, epoch, loss, val_metrics):
+    def epoch_info(self, epoch, train_loss, val_loss, val_metrics):
         """Logging per epoch information.
         Saving epoch number, all loss components and total loss during training phase
         and validation loss, validation metrics during validation phase.
         """
         msg = 'Epoch: ' + str(epoch) + '\n'
-        for key in loss:
-            msg += '\t' + key + ': ' + str(loss[key]) + '\n'
-
-        msg = '\tValidation loss: '
-        msg += str(loss['Total loss']) + '\n'
-        msg += '\tValidation IoU: ' + str(val_metrics) + '\n'
-        self.logger.info(msg)
-
-    def info(self, msg):
-        self.logger.info(msg)
+        msg += '\tTrain loss:\n'
+        msg += str(train_loss) + '\n'
+        msg += '\tValidation loss:\n'
+        msg += str(val_loss) + '\n'
+        msg += '\tValidation metrics:\n'
+        msg += str(val_metrics) + '\n'
+        self.info(msg)

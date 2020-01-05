@@ -5,6 +5,18 @@ from collections import Counter
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 
+class LossCounter(Counter):
+    def __init__(self, *args, **kwargs):
+        super(LossCounter, self).__init__(*args, **kwargs)
+
+    def __str__(self):
+        msg = ''
+        for key in self:
+            msg += '\t' + key + ': ' + str(self[key]) + '\n'
+
+        return msg
+
+
 class Loss(torch.nn.Module):
     def __init__(self, grid_size, num_bboxes, num_classes=1, lambda_coord=5.0, lambda_noobj=0.5):
         super(Loss, self).__init__()
@@ -152,5 +164,5 @@ class Loss(torch.nn.Module):
         logger_loss = {'Coordinates loss': loss_xy.item() / self._N, 'Width/Height loss': loss_wh.item() / self._N,
                        'Confidence loss': loss_conf.item() / self._N, 'No object loss': loss_noobj.item() / self._N,
                        'Class probabilities loss': loss_class.item() / self._N, 'Total loss': loss.item()}
-        logger_loss = Counter(logger_loss)
+        logger_loss = LossCounter(logger_loss)
         return loss, logger_loss
