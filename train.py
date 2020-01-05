@@ -4,7 +4,7 @@ from utils.logger import Logger
 from utils.datasets import DetectionDataset
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import albumentations
-from utils.loss import Loss
+from utils.loss import Loss, LossCounter
 from collections import Counter
 from utils.utils import from_yolo_target, xywh2xyxy, compute_iou
 import os
@@ -17,14 +17,14 @@ TASK = 'detection'  # detection or emorec
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'new trainer test'
+COMMENT = 'new trainer test. bug fixed'
 
 if not TEST:
-    os.mkdir(os.path.join(PATH_TO_LOG, SESSION_ID))
+    os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
-n_epoch = 55
+n_epoch = 101
 batch_size = 14
 grid_size = 7
 num_bboxes = 2
@@ -36,7 +36,7 @@ model = TinyYolo(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
 
 # Initiating optimizer and scheduler for training steps
 # optim = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
-optim = torch.optim.Adam(model.parameters(), lr=0.0003, weight_decay=0.0005)
+optim = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.0005)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optim, [10], gamma=1.0)
 
 # Declaring augmentations for images and bboxes
@@ -72,10 +72,11 @@ if not TEST:
 
 # Training loop
 for epoch in range(n_epoch):
+    batch_train_loss = LossCounter()
+    batch_val_loss = LossCounter()
+    batch_val_metrics = 0
 
     for phase in ['train', 'val']:
-        epoch_loss = Counter()
-        iou = 0
 
         if phase == 'train':
             dataloader = train_dataloader
@@ -92,37 +93,41 @@ for epoch in range(n_epoch):
             with torch.set_grad_enabled(phase == 'train'):
                 output = model(image)
                 loss_value, logger_loss = loss(output, target)
+
                 if phase == 'train':
                     # Parameters updating
                     loss_value.backward()
                     optim.step()
                     scheduler.step(epoch)
+
+                    batch_train_loss += logger_loss
                 else:
                     # Computing metrics at validation phase
+
                     face_rect.to(device)
                     listed_output = torch.tensor(from_yolo_target(output, image_w=448, grid_size=grid_size, num_bboxes=num_bboxes))
                     preds = torch.empty((listed_output.size(0), 5))
                     idxs = torch.argmax(listed_output[:, :, 4], dim=1)
                     for batch in range(listed_output.size(0)):
                         preds[batch] = listed_output[batch, idxs[batch], ...]
-                    iou += compute_iou(face_rect,
-                                       torch.tensor(xywh2xyxy(preds[:, :4]), dtype=torch.float), num_bboxes=2).mean().detach().cpu().numpy()
 
-            epoch_loss += logger_loss
+                    batch_val_loss += logger_loss
+                    batch_val_metrics += compute_iou(face_rect,
+                                                     torch.tensor(xywh2xyxy(preds[:, :4]), dtype=torch.float), num_bboxes=2).mean().item()
+    epoch_train_loss = LossCounter({key: value / len(train_dataloader) for key, value in batch_train_loss.items()})
+    epoch_val_loss = LossCounter({key: value / len(val_dataloader) for key, value in batch_val_loss.items()})
+    epoch_val_metrics = batch_val_metrics / len(val_dataloader)
+    if not TEST:
+        # Logging
+        logger.epoch_info(epoch=epoch, train_loss=epoch_train_loss, val_loss=epoch_val_loss, val_metrics=epoch_val_metrics)
 
-        epoch_loss = Counter({key: value / (i + 1) for key, value in epoch_loss.items()})
-        iou = iou / (i + 1)
-        if not TEST:
-            # Logging
-            logger.epoch_info(epoch=epoch, loss=epoch_loss, val_metrics=iou, phase=phase)
-
-            if phase == 'train' and epoch % 5 == 0:
-                # Checkpoint. Saving model, optimizer, scheduler and train info
-                torch.save({
-                    'epoch': epoch,
-                    'model_state_dict': model.state_dict(),
-                    'optim_state_dict': optim.state_dict(),
-                    'scheduler_state_dict': scheduler.state_dict(),
-                    'loss': loss_value.item()
-                }, os.path.join(PATH_TO_LOG, SESSION_ID, 'checkpoint.pt'))
-                logger.logger.info('!Checkpoint created!')
+    if epoch % 5 == 0:
+        # Checkpoint. Saving model, optimizer, scheduler and train info
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optim_state_dict': optim.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+            'train_loss': batch_train_loss['Total loss q']
+        }, os.path.join(PATH_TO_LOG, SESSION_ID, 'checkpoint.pt'))
+        logger.info('!Checkpoint created!')

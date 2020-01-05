@@ -7,7 +7,7 @@ def xywh2xyxy(coords):
     """Convert face recrtangle coordinates
     [x_center, y_center, width, height] -> [x_lt, y_lt, x_rb, y_rb]
     Args:
-        coord: (numpy.array)
+        coords: (numpy.array)
     Return:
         (numpy.array)
     """
@@ -142,42 +142,15 @@ def compute_iou(bbox_1, bbox_2, num_bboxes):
     intersection = intersection_wh[:, 1] * intersection_wh[:, 0]  # (1, B)
 
     target_area = (bbox_1[:, 2] - bbox_1[:, 0]) * \
-                  (bbox_1[:, 3] - bbox_1[:, 1])  # (1, )
+                  (bbox_1[:, 3] - bbox_1[:, 1])
     pred_area = (bbox_2[:, 2] - bbox_2[:, 0]) * \
-                (bbox_2[:, 3] - bbox_2[:, 1])  # (B, )
+                (bbox_2[:, 3] - bbox_2[:, 1])
     target_area = target_area
     pred_area = pred_area
     assert target_area.size() == pred_area.size()
 
-    union = target_area + pred_area - intersection  # (1, B)
+    union = target_area + pred_area - intersection
 
-    iou = intersection / union  # (1, B)
+    iou = intersection / union
 
     return iou
-
-
-def get_prediction(yolo_output, image_w, grid_size, num_bboxes):
-    batch_size = yolo_output.size(0)
-    listed_target = yolo_output[:, :5 * num_bboxes, :, :]
-    listed_target = listed_target.view(-1, 5 * num_bboxes, grid_size * grid_size)
-    listed_target = listed_target.transpose(1, 2).contiguous().view(-1, num_bboxes * grid_size * grid_size, 5)
-
-    #
-    #
-    # k = 0
-    # for i in range(batch_size):
-    #     cell_size = int(image_w / grid_size)
-    #     for cell_idx in product(list(range(grid_size)), repeat=2):
-    #         x_bias, y_bias = tuple(map(lambda idx: idx * cell_size, cell_idx))
-    #         has_object = int(listed_target[k, 4] > 0)
-    #         listed_target[k:k + num_bboxes, 0] = \
-    #             (listed_target[k:k + num_bboxes, 0] * cell_size + x_bias) * has_object
-    #         listed_target[k:k + num_bboxes, 1] = \
-    #             (listed_target[k:k + num_bboxes, 1] * cell_size + y_bias) * has_object
-    #         listed_target[k:k + num_bboxes, 2:4] = \
-    #             listed_target[k:k + num_bboxes, 2:4] * image_w * has_object
-    #
-    #         k += num_bboxes
-    #
-    # res = listed_target.detach().cpu().numpy()
-    return listed_target
