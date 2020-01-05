@@ -4,7 +4,7 @@ import torch
 from fpdf import FPDF
 import matplotlib.pyplot as plt
 
-PATH_TO_LOG = 'log/19.12.14_23-25/logger.log'
+PATH_TO_LOG = 'log/detection/20.01.05_13-59/logger.log'
 
 coordinate_loss = []
 wh_loss = []
