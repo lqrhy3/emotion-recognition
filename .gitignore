@@ -1,5 +1,10 @@
 venv/
 .idea/
 __pycache__/
-log/
 tesst.py
+log/
+.DS_Store
+data/.DS_Store
+data/recognition/.DS_Store
+simple_demo.pdf
+graphs.png
