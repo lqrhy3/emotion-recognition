@@ -14,7 +14,7 @@ class LossCounter(Counter):
         for key in self:
             msg += '\t' + key + ': ' + str(self[key]) + '\n'
 
-        return msg
+        return msg.rstrip('\n')
 
 
 class Loss(torch.nn.Module):

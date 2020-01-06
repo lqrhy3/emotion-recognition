@@ -68,9 +68,9 @@ class Logger:
         """
         msg = 'Epoch: ' + str(epoch) + '\n'
         msg += '\tTrain loss:\n'
-        msg += str(train_loss) + '\n'
+        msg += str(train_loss) + '\n\n'
         msg += '\tValidation loss:\n'
-        msg += str(val_loss) + '\n'
+        msg += str(val_loss) + '\n\n'
         msg += '\tValidation metrics:\n'
-        msg += str(val_metrics) + '\n'
+        msg += str(val_metrics) + '\n\n'
         self.info(msg)
