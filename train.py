@@ -70,6 +70,7 @@ if not TEST:
                                                                          'grid_size': grid_size, 'num_bboxes': num_bboxes},
                       transforms=train_transforms, comment=COMMENT)
 
+torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'model.pt'))
 # Training loop
 for epoch in range(n_epoch):
     batch_train_loss = LossCounter()
