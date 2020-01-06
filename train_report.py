@@ -99,6 +99,16 @@ def make_report(PATH_TO_LOG):
     line_for_image += 7
     pdf.image(os.path.join(PATH_TO_LOG, 'graphs.png'), x=45, y=line_for_image, w=100)
 
+    pdf.add_page()
+
+    pdf.set_font('courier', size=8)
+    pdf.cell(200, 3, txt='Train loss on the {} epochs: {} '.format(
+        len(total_loss), total_loss[-1]), ln=1, align='L')
+    pdf.cell(200, 3, txt='Validation loss on the {} epochs: {} '.format(
+        len(valid_loss), valid_loss[-1]), ln=1, align='L')
+    pdf.cell(200, 3, txt='Validation metrics on the {} epochs: {} '.format(
+        len(valid_metrics), valid_metrics[-1]), ln=1, align='L')
+
     pdf.output(os.path.join(PATH_TO_LOG, 'report.pdf'))
 
 
