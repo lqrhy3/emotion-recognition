@@ -5,7 +5,7 @@ from fpdf import FPDF
 import os
 
 
-PATH_TO_LOG = 'log/emorec/20.01.05_03-09/'
+PATH_TO_LOG = 'log/detection/20.01.06_13-40/'
 
 input_shape = (3, 448, 448)
 coordinate_loss = []
@@ -31,7 +31,7 @@ with open(os.path.join(PATH_TO_LOG, 'logger.log'), 'r') as f:
     epochs = text.split('Epoch:')
     info = epochs[0]
 
-    for epoch in epochs:
+    for epoch in epochs[1::]:
         phases = epoch.split('\n\n')
         # Train Loss
         if phases[0].find('Total loss') != -1:
@@ -98,5 +98,4 @@ pdf.cell(200, 7, txt='Results:', ln=1, align="L")
 line_for_image += 7
 pdf.image('graphs.png', x=55, y=line_for_image, w=120)
 
-pdf.output('report.pdf', dest=PATH_TO_LOG)
-
+pdf.output('report.pdf')  # dest=PATH_TO_LOG ?
