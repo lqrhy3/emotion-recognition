@@ -1,101 +1,137 @@
-from torchsummary import summary
-from tiny_yolo_model import TinyYolo
+from utils.summary import summary
 import torch
-from fpdf import FPDF
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+from fpdf import FPDF
+import os
+import sys
 
 
-PATH_TO_LOG = 'log/20.01.03_13-20/logger.log'
+def make_report(PATH_TO_LOG):
 
-coordinate_loss = []
-wh_loss = []
-conf_loss = []
-noobj_loss = []
-class_prob = []
-total_loss = []
-valid_loss = []
-valid_iou = []
+    input_shape = (3, 448, 448)
+    total_loss = []  # Total train loss for Yolo, train loss for others
+    valid_loss = []
+    valid_metrics = []
 
-info = ''
-line_for_image = 5
+    line_for_image = 5
 
-with open(PATH_TO_LOG, 'r') as f:
-    for number, line in enumerate(f):
-        if number in range(2, 18) and number != 3:
-            if str(line) == "___\n":
-                info += "\n"
-            elif line.find("params") != -1:
-                info += line.split(", \'params\'")[0] + "}\n"
+    model = torch.load(os.path.join(PATH_TO_LOG, 'model.pt'))
+    model_name = model.__class__.__name__
+    model_summary = summary(model, input_shape)
+    log_file = ''
+
+    for file in os.listdir(PATH_TO_LOG):
+        if file.endswith('.log'):
+            log_file = file
+
+    if log_file == '':
+        raise RuntimeError('".log" file not found')
+
+    # Parsing
+    with open(os.path.join(PATH_TO_LOG, log_file), 'r') as f:
+        text = f.read()
+        epochs = text.split('Epoch:')
+        info = epochs[0]
+
+        for epoch in epochs[1::]:
+            phases = epoch.split('\n\n')
+            # Train Loss
+            if phases[0].find('Total loss') != -1:
+                total_loss.append(float(phases[0].split('Total loss:')[1]))
             else:
-                info += line
+                total_loss.append(float(phases[0].split('loss:')[1]))
 
-        # if line.find('Coordinates loss') != -1:
-        #     coordinate_loss.append(float(line.split(':')[1]))
-        # if line.find('Width/Height loss') != -1:
-        #     wh_loss.append(float(line.split(':')[1]))
-        # if line.find('Confidence loss') != -1:
-        #     conf_loss.append(float(line.split(':')[1]))
-        # if line.find('No object loss') != -1:
-        #     noobj_loss.append(float(line.split(':')[1]))
-        # if line.find('Class probabilities loss') != -1:
-        #     class_prob.append(float(line.split(':')[1]))
+            # Validation Loss
+            if phases[1].find('Total loss') != -1:
+                valid_loss.append(float(phases[1].split('Total loss:')[1]))
+            else:
+                valid_loss.append(float(phases[1].split('loss:')[1]))
 
-        if line.find('Total loss') != -1:
-            total_loss.append(float(line.split(':')[1]))
-        if line.find('Validation loss') != -1:
-            valid_loss.append(float(line.split(':')[1]))
-        if line.find('Validation IoU') != -1:
-            valid_iou.append(float(line.split(':')[1]))
+            # Validation metrics
+            if phases[2].find('metrics') != -1:
+                valid_metrics.append(float(phases[2].split('metrics:')[1]))
+
+    info = info.replace('Train info:\n', '')
+
+    # Writing to report
+    plt.subplot(2, 1, 1)
+    plt.plot(valid_loss, 'r')
+    plt.plot(total_loss, 'g')
+    plt.legend(['Validation loss', 'Train loss'])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(valid_metrics)
+    plt.legend(['Validation metric'])
+    plt.xlabel('Epoch')
+    plt.ylabel('Validation metric')
+
+    plt.savefig(os.path.join(PATH_TO_LOG, 'graphs.png'))
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font('times', size=15, style='B')
+    pdf.cell(200, 7, txt='{} Train Report'.format(model_name), ln=1, align='C')
+    line_for_image += 7
+
+    pdf.set_font('times', size=12, style='B')
+    pdf.cell(200, 7, txt='Model summary:', ln=1, align='L')
+    line_for_image += 7
+    pdf.set_font('courier', size=8)
+
+    for line in model_summary.splitlines():
+        pdf.cell(200, 3, txt=line, ln=1, align='C')
+        line_for_image += 3
+
+    pdf.set_font('times', size=12, style='B')
+    pdf.cell(200, 7, txt='Train info:', ln=1, align='L')
+    line_for_image += 7
+    pdf.set_font('courier', size=8)
+    for line in info.splitlines():
+        pdf.cell(200, 3, txt=line, ln=1, align='L')
+        line_for_image += 3
+
+    pdf.set_font('times', size=12, style='B')
+    pdf.cell(200, 7, txt='Results:', ln=1, align='L')
+    line_for_image += 7
+    pdf.image(os.path.join(PATH_TO_LOG, 'graphs.png'), x=45, y=line_for_image, w=100)
+
+    pdf.add_page()
+
+    pdf.set_font('courier', size=8)
+    pdf.cell(200, 3, txt='Train loss on the {} epochs: {} '.format(
+        len(total_loss), total_loss[-1]), ln=1, align='L')
+    pdf.cell(200, 3, txt='Validation loss on the {} epochs: {} '.format(
+        len(valid_loss), valid_loss[-1]), ln=1, align='L')
+    pdf.cell(200, 3, txt='Validation metrics on the {} epochs: {} '.format(
+        len(valid_metrics), valid_metrics[-1]), ln=1, align='L')
+
+    pdf.output(os.path.join(PATH_TO_LOG, 'report.pdf'))
 
 
-plt.subplot(2, 1, 1)
-plt.plot(valid_loss, "r")
-plt.plot(total_loss, "g")
-plt.legend(["TinyYOLO validation loss", "TinyYOLO train loss"])
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
+def find_last_dir():
+    last_mod_time = 0
+    last_dirname = ''
+    folders = os.listdir('log/')
+    for folder in folders:
+        subfolders = os.listdir(os.path.join('log/', folder))
+        for subfolder in subfolders:
+            folder_name = os.path.join('log/', folder, subfolder)
+            mod_time = os.path.getmtime(folder_name)
+            if mod_time > last_mod_time:
+                last_dirname = folder_name
+                last_mod_time = mod_time
 
-plt.subplot(2, 1, 2)
-plt.plot(valid_iou)
-plt.legend(["TinyYOLO validation iou"])
-plt.xlabel("Epoch")
-plt.ylabel("Validation iou")
-
-plt.savefig("graphs.png")
-
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-model = TinyYolo(grid_size=7, num_bboxes=2)
-model = model.to(device)
-model_summary = summary(model, (3, 448, 448))
-
-pdf = FPDF()
-pdf.add_page()
-pdf.set_font("times", size=15, style="B")
-pdf.cell(200, 7, txt='Train Report', ln=1, align="C")
-line_for_image += 7
-
-pdf.set_font("times", size=12, style="B")
-pdf.cell(200, 7, txt='Train info:', ln=1, align="L")
-line_for_image += 7
-pdf.set_font("courier", size=8)
-for line in info.splitlines():
-    pdf.cell(200, 3, txt=line, ln=1, align="L")
-    line_for_image += 3
+    return last_dirname
 
 
-pdf.set_font("times", size=12, style="B")
-pdf.cell(200, 7, txt='Model summary:', ln=1, align="L")
-line_for_image += 7
-pdf.set_font("courier", size=8)
-for line in model_summary.splitlines():
-    pdf.cell(200, 3, txt=line, ln=1, align="C")
-    line_for_image += 3
+if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        PATH_TO_LOGDIR = sys.argv[1]
+    else:
+        PATH_TO_LOGDIR = find_last_dir()
 
-pdf.set_font("times", size=12, style="B")
-pdf.cell(200, 7, txt='Results:', ln=1, align="L")
-line_for_image += 7
-pdf.image("graphs.png", x=55, y=line_for_image, w=120)
-
-pdf.output("simple_demo.pdf")
+    make_report(PATH_TO_LOGDIR)
