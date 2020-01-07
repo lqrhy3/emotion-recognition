@@ -17,7 +17,7 @@ TASK = 'detection'  # detection or emorec
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'new trainer test. bug fixed'
+COMMENT = 'new train_report test'
 
 if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
