@@ -8,9 +8,8 @@ import os
 import sys
 
 
-def make_report(PATH_TO_LOG):
+def make_report(PATH_TO_LOG, input_shape):
 
-    input_shape = (3, 448, 448)
     total_loss = []  # Total train loss for Yolo, train loss for others
     valid_loss = []
     valid_metrics = []
@@ -129,9 +128,14 @@ def find_last_dir():
 
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
+    if len(sys.argv) == 2:
         PATH_TO_LOGDIR = sys.argv[1]
+        input_size = 448
+    elif len(sys.argv) == 3:
+        PATH_TO_LOGDIR = sys.argv[1]
+        input_size = sys.argv[2]
     else:
         PATH_TO_LOGDIR = find_last_dir()
+        input_size = 448
 
-    make_report(PATH_TO_LOGDIR)
+    make_report(PATH_TO_LOGDIR, (3, 320, 320))
