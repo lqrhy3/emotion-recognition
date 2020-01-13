@@ -133,9 +133,9 @@ if __name__ == '__main__':
         input_size = 448
     elif len(sys.argv) == 3:
         PATH_TO_LOGDIR = sys.argv[1]
-        input_size = sys.argv[2]
+        input_size = int(sys.argv[2])
     else:
         PATH_TO_LOGDIR = find_last_dir()
         input_size = 448
 
-    make_report(PATH_TO_LOGDIR, (3, 320, 320))
+    make_report(PATH_TO_LOGDIR, (3, input_size, input_size))
