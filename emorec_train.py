@@ -1,4 +1,4 @@
-from emorec_model import ConvNet
+from emorec_model import *
 import numpy as np
 import datetime
 import os
@@ -27,7 +27,7 @@ emotions = ['Anger', 'Disgust', 'Neutral', 'Surprise']
 
 # Initiating model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = ConvNet(emotion_map=emotions).to(device)
+model = ResNet18(emotion_map=emotions).to(device)
 
 optim = torch.optim.Adam(model.parameters(), lr=lr)
 
