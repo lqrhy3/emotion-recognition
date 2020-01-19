@@ -16,7 +16,7 @@ TASK = 'emorec'
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'ConvNet for EmoRec'
+COMMENT = 'MiniXception FER'
 
 # Declaring hyperparameters
 n_epoch = 20
@@ -27,18 +27,18 @@ emotions = ['Anger', 'Disgust', 'Neutral', 'Surprise']
 
 # Initiating model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = ResNet18(emotion_map=emotions).to(device)
+model = MiniXception(emotion_map=emotions).to(device)
 
 optim = torch.optim.Adam(model.parameters(), lr=lr)
 
 train_transforms = transforms.Compose([
-    transforms.CenterCrop(448),
+    transforms.Resize(64),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(15),
     transforms.ToTensor()
 ])
 
-dataset = EmoRecDataset(transform=train_transforms)
+dataset = EmoRecDataset(transform=train_transforms, path='../data/fer')
 
 dataset_len = len(dataset)
 val_len = int(np.floor(val_split * dataset_len))

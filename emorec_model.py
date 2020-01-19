@@ -4,7 +4,7 @@ import torchvision.models
 
 
 class MiniXception(nn.Module):
-    def __init__(self,  block_counts, emotion_map, in_channels=3):
+    def __init__(self, emotion_map, in_channels=3):
         super(MiniXception, self).__init__()
         num_classes = len(emotion_map)
 
@@ -16,7 +16,7 @@ class MiniXception(nn.Module):
         self.bn2 = nn.BatchNorm2d(8)
         self.act2 = nn.ReLU()
 
-        self.blocks = self._make_xception_blocks(in_channels=8, n=block_counts)
+        self.blocks = self._make_xception_blocks(in_channels=8, n=4)
 
         self.sepconv = DepthwiseSeparableConv(in_channels=128, out_channels=16)
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
