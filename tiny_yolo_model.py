@@ -2,7 +2,7 @@ from torch import nn
 
 
 class TinyYolo(nn.Module):
-    """Tiny YOLOv1 model.
+    """Tiny YOLOv1 detection_model.
     Constructing TinyYOLO network supporting grid cell size, number of bboxes per cell and number of classes modification.
     """
     def __init__(self, grid_size, num_bboxes, n_classes=1):
@@ -48,7 +48,7 @@ class TinyYolo(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        # Declaring forward pass of model
+        # Declaring forward pass of detection_model
         x = x.float()
         x = self.layer1(x)
         x = self.layer2(x)

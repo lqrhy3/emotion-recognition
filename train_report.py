@@ -16,7 +16,7 @@ def make_report(PATH_TO_LOG, input_shape):
 
     line_for_image = 5
 
-    model = torch.load(os.path.join(PATH_TO_LOG, 'model.pt'))
+    model = torch.load(os.path.join(PATH_TO_LOG, 'detection_model.pt'))
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape)
     log_file = ''

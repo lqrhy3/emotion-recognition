@@ -31,13 +31,13 @@ grid_size = 5
 num_bboxes = 2
 val_split = 0.03
 
-# Initiating model and device (cuda/cpu)
+# Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = TinyYolo(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
 
 # Initiating optimizer and scheduler for training steps
 optim = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
-#optim = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.0005)
+#optim = torch.optim.Adam(detection_model.parameters(), lr=0.0001, weight_decay=0.0005)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optim, [15, 40, 70], gamma=0.35)
 
 # Declaring augmentations for images and bboxes
@@ -71,7 +71,7 @@ if not TEST:
                                                                          'grid_size': grid_size, 'num_bboxes': num_bboxes},
                       transforms=train_transforms, comment=COMMENT)
 
-torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'model.pt'))
+torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'detection_model.pt'))
 # Training loop
 for epoch in range(n_epoch):
     batch_train_loss = LossCounter()
@@ -124,7 +124,7 @@ for epoch in range(n_epoch):
         logger.epoch_info(epoch=epoch, train_loss=epoch_train_loss, val_loss=epoch_val_loss, val_metrics=epoch_val_metrics)
 
     if epoch % 5 == 0:
-        # Checkpoint. Saving model, optimizer, scheduler and train info
+        # Checkpoint. Saving detection_model, optimizer, scheduler and train info
         torch.save({
             'epoch': epoch,
             'model_state_dict': model.state_dict(),

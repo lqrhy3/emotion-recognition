@@ -34,8 +34,9 @@ while cap.isOpened():
     show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)),
                     np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), pred_output[:, 4])
     fps = 1. / (time.time() - start)
-    print(fps)
-
+    # print(fps)
+    pred_xyxy = xywh2xyxy(pred_output[:, :4])
+    print(pred_xyxy)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

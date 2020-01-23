@@ -50,7 +50,7 @@ train_len = len(train_dataloader)
 
 loss = CrossEntropyLoss(reduction='mean')
 
-# Initiating model and device (cuda/cpu)
+# Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = MiniXception(emotion_map=emotions, in_channels=dataset.img_channels).to(device)
 
@@ -65,7 +65,7 @@ if not TEST:
     logger.start_info(hyperparameters=hyperparameters, optim=optim, transforms=train_transforms, comment=COMMENT)
 
 
-torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'model.pt'))
+torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'detection_model.pt'))
 # Training loop
 for epoch in range(n_epoch):
     batch_train_loss = 0
