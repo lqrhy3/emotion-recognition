@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 from torchvision.datasets import folder
 from utils import utils
 from utils import transforms
+from PIL import Image
 import os
 import cv2
 import numpy as np
@@ -68,7 +69,7 @@ class EmoRecDataset(folder.DatasetFolder):
         List of emotions to use (should be name of foler)
         """
         self.datadir = os.path.join(self.dir_, path)
-        super(EmoRecDataset, self).__init__(self.datadir, loader=folder.default_loader,
+        super(EmoRecDataset, self).__init__(self.datadir, loader=pil_loader,
                                             extensions=folder.IMG_EXTENSIONS, transform=transform)
 
         if emotions is not None:
@@ -81,3 +82,17 @@ class EmoRecDataset(folder.DatasetFolder):
         if len(self.samples) == 0:
             raise (RuntimeError("Found 0 files in subfolders of: " + self.root + "\nSupported extensions are: " +
                                 ",".join(self.extensions)))
+        self.img_channels = self.get_num_channels()
+
+    def get_num_channels(self):
+        img, _ = self.__getitem__(0)
+        return img.shape[0]
+
+
+def pil_loader(path):
+    with open(path, 'rb') as f:
+        img = Image.open(f)
+        if img.mode == 'L':
+            return img.convert('L')
+        else:
+            return img.convert('RGB')

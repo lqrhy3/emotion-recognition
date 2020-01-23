@@ -25,11 +25,6 @@ val_split = 0.05
 lr = 0.001
 emotions = ['Anger', 'Disgust', 'Neutral', 'Surprise']
 
-# Initiating model and device (cuda/cpu)
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = MiniXception(emotion_map=emotions).to(device)
-
-optim = torch.optim.Adam(model.parameters(), lr=lr)
 
 train_transforms = transforms.Compose([
     transforms.Resize(64),
@@ -51,12 +46,20 @@ val_sampler = SubsetRandomSampler(val_idxs)
 train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=train_sampler)
 val_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=val_sampler)
 
+train_len = len(train_dataloader)
+
 loss = CrossEntropyLoss(reduction='mean')
+
+# Initiating model and device (cuda/cpu)
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+model = MiniXception(emotion_map=emotions, in_channels=dataset.img_channels).to(device)
+
+optim = torch.optim.Adam(model.parameters(), lr=lr)
 
 
 if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
-    logger = Logger('ConvNet for EmoRec', task=TASK, session_id=SESSION_ID)
+    logger = Logger(COMMENT, task=TASK, session_id=SESSION_ID)
 
     hyperparameters = {'n_epoch': n_epoch, 'batch_size': batch_size, 'emotions': emotions}
     logger.start_info(hyperparameters=hyperparameters, optim=optim, transforms=train_transforms, comment=COMMENT)
@@ -77,7 +80,7 @@ for epoch in range(n_epoch):
             dataloader = val_dataloader
             model.eval()
 
-        for image, label in dataloader:
+        for i, (image, label) in enumerate(dataloader):
             image = image.to(device)
             label = label.to(device)
 
@@ -88,6 +91,7 @@ for epoch in range(n_epoch):
                 loss_value = loss(pred, label)
 
                 if phase == 'train':
+                    print('{0} / {1}'.format(i, train_len))
                     loss_value.backward()
                     optim.step()
                     batch_train_loss += loss_value.item()

@@ -3,8 +3,11 @@ from torch import nn
 import torchvision.models
 
 
+__all__ = ['MiniXception', 'ConvNet', 'PretrConvNet']
+
+
 class MiniXception(nn.Module):
-    def __init__(self, emotion_map, in_channels=3):
+    def __init__(self, emotion_map, in_channels=1):
         super(MiniXception, self).__init__()
         num_classes = len(emotion_map)
 
