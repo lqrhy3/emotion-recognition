@@ -101,12 +101,9 @@ def make_report(PATH_TO_LOG, input_shape):
     pdf.add_page()
 
     pdf.set_font('courier', size=8)
-    pdf.cell(200, 3, txt='Train loss on the {} epochs: {} '.format(
-        len(total_loss), total_loss[-1]), ln=1, align='L')
-    pdf.cell(200, 3, txt='Validation loss on the {} epochs: {} '.format(
-        len(valid_loss), valid_loss[-1]), ln=1, align='L')
-    pdf.cell(200, 3, txt='Validation metrics on the {} epochs: {} '.format(
-        len(valid_metrics), valid_metrics[-1]), ln=1, align='L')
+    pdf.cell(200, 3, txt=f'Train loss on the last epoch: {total_loss[-1]}', ln=1, align='L')
+    pdf.cell(200, 3, txt=f'Validation loss on the last epoch: {valid_loss[-1]} ', ln=1, align='L')
+    pdf.cell(200, 3, txt=f'Validation metrics on the last epoch: {valid_metrics[-1]} ', ln=1, align='L')
 
     pdf.output(os.path.join(PATH_TO_LOG, 'report.pdf'))
 
@@ -138,4 +135,4 @@ if __name__ == '__main__':
         PATH_TO_LOGDIR = find_last_dir()
         input_size = 448
 
-    make_report(PATH_TO_LOGDIR, (3, input_size, input_size))
+    make_report(PATH_TO_LOGDIR, (3, 320, 320))

@@ -11,8 +11,8 @@ import time
 
 PATH_TO_MODEL = 'checkpoint.pt'
 
-model = TinyYolo(grid_size=7, num_bboxes=2, n_classes=1)
-load = torch.load(os.path.join('log\\detection', '20.01.05_13-59', PATH_TO_MODEL))
+model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
+load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
 model.load_state_dict(load['model_state_dict'])
 
 
@@ -25,11 +25,11 @@ cap = cv2.VideoCapture(0)
 while cap.isOpened():
     ret, image = cap.read()
     start = time.time()
-    image = cv2.resize(image, (448, 448))
+    image = cv2.resize(image, (320, 320))
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
     output = model(image)
-    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=7, num_bboxes=2)
+    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=5, num_bboxes=2)
     pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]
     show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)),
                     np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), pred_output[:, 4])

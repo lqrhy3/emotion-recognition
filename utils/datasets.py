@@ -18,9 +18,9 @@ class DetectionDataset(Dataset):
     dir_ = os.path.dirname(__file__)
 
     def __init__(self, grid_size, num_bboxes, path='../data/detection/', transform=None):
-        self.datadir = os.path.join(self.dir_, path, 'train_images')
+        self.datadir = os.path.join(self.dir_, path, 'train_images_v2')
         self.img_names = np.array(os.listdir(self.datadir))
-        self.markup_dir = os.path.join(self.dir_, path, 'data_markup.txt')
+        self.markup_dir = os.path.join(self.dir_, path, 'data_markup_v2.txt')
         self.transform = transform
 
         self.S = grid_size
@@ -43,7 +43,7 @@ class DetectionDataset(Dataset):
         img_name = os.path.join(self.datadir, self.img_names[idx])
         img = cv2.imread(img_name)
 
-        face_rect = np.array(self.markup[self.img_names[idx][:16]])
+        face_rect = np.array(self.markup[self.img_names[idx][:-4]])
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])

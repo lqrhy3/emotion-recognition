@@ -1,6 +1,7 @@
 import cv2
 import os
 import json
+import numpy as np
 from utils.utils import xywh2xyxy
 
 
@@ -12,10 +13,10 @@ def show_target_images(images_path='train_images/',
 
     markup = json.load(open(markup_path, 'r'))
     for image_name in os.listdir(images_path)[0:max_images]:
-        name = image_name[:16]
-        points = xywh2xyxy(markup[name])
+        name = image_name[:-4]
+        points = np.array(xywh2xyxy(markup[name]))
         img = cv2.imread(images_path + image_name)
-        show_rectangles(img, [points], name=name, color=color, thickness=thickness)
+        show_rectangles(img, np.array([points]), name=name, color=color, thickness=thickness)
 
 
 def show_rectangles(image, rectangles, confs=None, name='image', color=(0, 255, 0), thickness=2):
@@ -27,3 +28,4 @@ def show_rectangles(image, rectangles, confs=None, name='image', color=(0, 255, 
         img = cv2.putText(img, str(conf), (rectangle[0], rectangle[1] + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), thickness)
     cv2.imshow(name, img)
     # cv2.waitKey(0)
+
