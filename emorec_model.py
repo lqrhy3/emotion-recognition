@@ -10,6 +10,7 @@ class MiniXception(nn.Module):
     def __init__(self, emotion_map, in_channels=1):
         super(MiniXception, self).__init__()
         num_classes = len(emotion_map)
+        self.emotion_map = emotion_map
 
         self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=8, kernel_size=3, stride=2, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(8)

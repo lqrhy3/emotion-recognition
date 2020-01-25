@@ -4,13 +4,13 @@ import os
 from PIL import Image
 from torchvision import transforms
 
-fer_data = pd.read_csv('fer2013.csv')
+fer_data = pd.read_csv('D:/emodata/fer2013.csv')
 
-resize = transforms.Resize(448)
-path_to_save = 'data/fer/'
+resize = transforms.Resize(64)
+path_to_save = 'D:/emodata/fer/'
 
-emotions = {0, 6, 5, 1}
-emo_map = {0: 'Anger', 1: 'Disgust', 5: 'Surprise', 6: 'Neutral'}
+emotions = {0, 6, 3, 4, 5}
+emo_map = {0: 'Angry', 3: 'Happy', 4: 'Sad', 5: 'Surprise', 6: 'Neutral'}
 
 fer_data = fer_data[fer_data['emotion'].isin(emotions)]
 fer_data['emotion'] = fer_data['emotion'].map(emo_map)
@@ -24,7 +24,11 @@ def save_fer_img():
         img = pixels.reshape((48, 48))
         img = Image.fromarray(img)
         img = resize(img)
-        img.save(os.path.join(path_to_save, row['emotion'], str(index) + '.jpg'))
+        try:
+            img.save(os.path.join(path_to_save, row['emotion'], str(index) + '.jpg'))
+        except FileNotFoundError:
+            os.mkdir(os.path.join('D:/emodata/fer', row['emotion']))
+            img.save(os.path.join('D:/emodata/fer', row['emotion'], str(index) + '.jpg'))
 
 
 save_fer_img()

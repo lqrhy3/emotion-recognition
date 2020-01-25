@@ -19,11 +19,11 @@ SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'MiniXception FER'
 
 # Declaring hyperparameters
-n_epoch = 20
-batch_size = 16
+n_epoch = 101
+batch_size = 64
 val_split = 0.05
 lr = 0.001
-emotions = ['Anger', 'Disgust', 'Neutral', 'Surprise']
+emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 
 
 train_transforms = transforms.Compose([
@@ -33,7 +33,7 @@ train_transforms = transforms.Compose([
     transforms.ToTensor()
 ])
 
-dataset = EmoRecDataset(transform=train_transforms, path='../data/fer')
+dataset = EmoRecDataset(transform=train_transforms, path='data/fer', emotions=emotions)
 
 dataset_len = len(dataset)
 val_len = int(np.floor(val_split * dataset_len))
@@ -91,7 +91,7 @@ for epoch in range(n_epoch):
                 loss_value = loss(pred, label)
 
                 if phase == 'train':
-                    print('{0} / {1}'.format(i, train_len))
+                    print('{0}/{1}'.format(i + 1, train_len))
                     loss_value.backward()
                     optim.step()
                     batch_train_loss += loss_value.item()

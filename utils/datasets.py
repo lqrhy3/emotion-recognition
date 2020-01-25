@@ -63,12 +63,12 @@ class DetectionDataset(Dataset):
 class EmoRecDataset(folder.DatasetFolder):
     dir_ = os.path.dirname(__file__)
 
-    def __init__(self, path='../data/recognition', emotions=None, transform=None):
+    def __init__(self, path='data/recognition', emotions=None, transform=None):
         """
         :param emotions:
         List of emotions to use (should be name of foler)
         """
-        self.datadir = os.path.join(self.dir_, path)
+        self.datadir = os.path.join(self.dir_, '..', path)
         super(EmoRecDataset, self).__init__(self.datadir, loader=pil_loader,
                                             extensions=folder.IMG_EXTENSIONS, transform=transform)
 

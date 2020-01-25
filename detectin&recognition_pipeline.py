@@ -10,9 +10,9 @@ from torchvision.transforms import ToTensor
 
 
 PATH_TO_DETECTION_MODEL = 'log\\detection\\20.01.13_12-53'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec'
+PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.01.24_2-50'
 SIZE = 64
-emotions = ['Anger', 'Disgust', 'Neutral', 'Surprise']
+emotions = ['Anger', 'Happy', 'Neutral', 'Sad']
 
 
 detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'))
@@ -22,11 +22,13 @@ detection_model.load_state_dict(detection_load['model_state_dict'])
 detection_model.to(torch.device('cpu'))
 detection_model.eval()
 
-recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model.pt'))
-recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'))
+# recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'detection_model.pt'))
+recognition_model = torch.load('D:/Emotion-Recognition-PRJCT2019/log/emorec/20.01.25_03-16/detection_model.pt')
+# recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'))
+recognition_load = torch.load('D:/Emotion-Recognition-PRJCT2019/log/emorec/20.01.25_03-16/checkpoint.pt')
 recognition_model.load_state_dict(recognition_load['model_state_dict'])
 
-
+recognition_model.to(torch.device('cpu'))
 recognition_model.eval()
 
 
