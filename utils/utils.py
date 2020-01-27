@@ -5,7 +5,7 @@ from itertools import product
 
 def xywh2xyxy(coords):
     """Convert face recrtangle coordinates
-    [x_center, y_center, width, height] -> [x_lt, y_lt, x_rb, y_rb]
+    [bbox_x_center, y_center, width, height] -> [x_lt, y_lt, x_rb, y_rb]
     Args:
         coords: (numpy.array)
     Return:
@@ -38,7 +38,7 @@ def xywh2xyxy(coords):
 
 def xyxy2xywh(coord):
     """Convert face recrtangle coordinates
-        [x_lt, y_lt, x_rb, y_rb] -> [x_center, y_center, width, height]
+        [x_lt, y_lt, x_rb, y_rb] -> [bbox_x_center, y_center, width, height]
         Args:
             coord: (numpy.array)
         Return:
