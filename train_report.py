@@ -1,11 +1,27 @@
-from utils.summary import summary
-import torch
+import cv2
+import os
 import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
-from fpdf import FPDF
-import os
 import sys
+import time
+import torch
+from fpdf import FPDF
+from utils.summary import summary
+from utils.transforms import ImageToTensor
+
+
+def get_inference_time(model, pth_to_data):
+    image = cv2.imread(pth_to_data)
+    image = cv2.resize(image, (320, 320))
+    image = ImageToTensor()(image)
+    image = image.unsqueeze(0)
+
+    start = time.time_ns()
+    model(image)
+    inference_time = time.time_ns() - start
+
+    return inference_time * 1e9
 
 
 def make_report(PATH_TO_LOG, input_shape):
@@ -16,9 +32,16 @@ def make_report(PATH_TO_LOG, input_shape):
 
     line_for_image = 5
 
+    load = torch.load(os.path.join(PATH_TO_LOG, 'checkpoint.pt'))
     model = torch.load(os.path.join(PATH_TO_LOG, 'detection_model.pt'))
+    model.load_state_dict(load['model_state_dict'])
+    model.to(torch.device('cpu'))
+
+    inference_time = get_inference_time(model, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
     model_name = model.__class__.__name__
-    model_summary = summary(model, input_shape)
+    model_summary = summary(model, input_shape, device='cpu')
+    model_summary += '----------------------------------------------------------------\n'
+    model_summary += 'Estimated inference time (secons per image): ' + str(inference_time) + '\n'
     log_file = ''
 
     for file in os.listdir(PATH_TO_LOG):

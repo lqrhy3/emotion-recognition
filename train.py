@@ -1,30 +1,31 @@
-import torch
-from tiny_yolo_model import TinyYolo
-from utils.logger import Logger
-from utils.datasets import DetectionDataset
-from torch.utils.data import DataLoader, SubsetRandomSampler
 import albumentations
-from utils.loss import Loss, LossCounter
-from collections import Counter
-from utils.utils import from_yolo_target, xywh2xyxy, compute_iou
-import os
 import datetime
 import numpy as np
-#test
+import os
+import torch
+from faced_model import FacedModel
+from tiny_yolo_model import TinyYolo
+
+from torch.utils.data import DataLoader, SubsetRandomSampler
+from utils.datasets import DetectionDataset
+from utils.logger import Logger
+from utils.loss import Loss, LossCounter
+from utils.utils import from_yolo_target, xywh2xyxy, compute_iou
+
 
 # Declaring constants for logging and creating dir for current experiment. Initiating logger.
 TASK = 'detection'  # detection or emorec
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'SGD try'
+COMMENT = 'FaceModel try. 8 layers. 5x5 grid. Adam. No scheduler.'
 
 if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
-n_epoch = 71
+n_epoch = 91
 batch_size = 21
 image_size = (320, 320)
 grid_size = 5
@@ -33,12 +34,13 @@ val_split = 0.03
 
 # Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = TinyYolo(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
+# model = TinyYolo(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
+model = FacedModel(grid_size=grid_size, num_bboxes=num_bboxes).to(device)
 
 # Initiating optimizer and scheduler for training steps
-optim = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
-#optim = torch.optim.Adam(detection_model.parameters(), lr=0.0001, weight_decay=0.0005)
-scheduler = torch.optim.lr_scheduler.MultiStepLR(optim, [15, 40, 70], gamma=0.35)
+#optim = torch.optim.SGD(model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
+optim = torch.optim.Adam(model.parameters(), lr=0.0001, weight_decay=0.0005)
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optim, [1], gamma=1)
 
 # Declaring augmentations for images and bboxes
 train_transforms = albumentations.Compose([

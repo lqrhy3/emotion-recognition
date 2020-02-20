@@ -49,7 +49,7 @@ class TinyYolo(nn.Module):
 
     def forward(self, x):
         # Declaring forward pass of detection_model
-        x = x.float()
+        x = x.float()   
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
