@@ -12,6 +12,9 @@ from utils.transforms import ImageToTensor
 
 
 def get_inference_time(model, pth_to_data):
+    """:param model: model weights
+       :param pth_to_data: path to data
+       :return inference_time: model inference time in seconds"""
     image = cv2.imread(pth_to_data)
     image = cv2.resize(image, (320, 320))
     image = ImageToTensor()(image)
@@ -20,13 +23,15 @@ def get_inference_time(model, pth_to_data):
     start = time.time_ns()
     model(image)
     inference_time = time.time_ns() - start
-
-    return inference_time * 1e9
+    inference_time *= 1e9
+    return inference_time
 
 
 def make_report(PATH_TO_LOG, input_shape):
-
-    total_loss = []  # Total train loss for Yolo, train loss for others
+    """Save .pdf report file about models with an model architecture and parameters
+    :param PATH_TO_LOG: path to directory with log of model training
+    :param input_shape: size of input image in px"""
+    total_loss = []  # Total train loss for Yolo or train loss for others
     valid_loss = []
     valid_metrics = []
 
@@ -132,6 +137,7 @@ def make_report(PATH_TO_LOG, input_shape):
 
 
 def find_last_dir():
+    """:return last_dirname: path to last-edited directory in folder 'log' """
     last_mod_time = 0
     last_dirname = ''
     folders = os.listdir('log/')
@@ -148,6 +154,8 @@ def find_last_dir():
 
 
 if __name__ == '__main__':
+    """:param sys.argv[1]: path to directory with logs
+       :param sys.argv[2] (optional): size of input image"""
     if len(sys.argv) == 2:
         PATH_TO_LOGDIR = sys.argv[1]
         input_size = 448
@@ -158,4 +166,3 @@ if __name__ == '__main__':
         PATH_TO_LOGDIR = find_last_dir()
         input_size = 448
 
-    make_report(PATH_TO_LOGDIR, (3, 320, 320))

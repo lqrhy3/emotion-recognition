@@ -7,7 +7,12 @@ __all__ = ['MiniXception', 'ConvNet', 'PretrConvNet']
 
 
 class MiniXception(nn.Module):
+    """MiniXception classification model.
+        Constructing MiniXception network supporting number of classes and number of input channels.
+        """
     def __init__(self, emotion_map, in_channels=1):
+        """:param emotion_map: emotion type list
+           :param in_channels [optional]: number of input channels"""
         super(MiniXception, self).__init__()
         num_classes = len(emotion_map)
         self.emotion_map = emotion_map
@@ -83,6 +88,7 @@ class DepthwiseSeparableConv(nn.Module):
 
 
 class ResNet18(nn.Module):
+    """Network based on ResNet18 with a pretrained backbone on the ImageNet"""
     def __init__(self, emotion_map):
         super(ResNet18, self).__init__()
         self.net = torchvision.models.resnet18()
@@ -93,7 +99,10 @@ class ResNet18(nn.Module):
 
 
 class ConvNet(nn.Module):
+    """ResNet-based classification model.
+        """
     def __init__(self, emotion_map):
+        """:param: emotion_map: emotion type list"""
         super(ConvNet, self).__init__()
 
         self.emotion_map = emotion_map
