@@ -1,13 +1,13 @@
 from torch import nn
-from utils.summary import summary
 
 
 class FacedModel(nn.Module):
+    """Convolutional network for face detection task. """
     def __init__(self, grid_size, num_bboxes, n_classes=1):
         super(FacedModel, self).__init__()
-        self.S = grid_size
-        self.B = num_bboxes
-        self.C = n_classes
+        self.S = grid_size  # Number of grid cells
+        self.B = num_bboxes  # Number of bounding boxes
+        self.C = n_classes  # Number of classes (for loss.py compatibility)
 
         self.layer1 = self._make_conv_block(in_channels=3, out_channels=8)
         self.layer2 = self._make_conv_block(in_channels=8)
@@ -25,6 +25,12 @@ class FacedModel(nn.Module):
 
     @staticmethod
     def _make_conv_block(in_channels, out_channels=None, n_convs=2, max_pool=True):
+        """Conv block builder.
+        :param in_channels: number of input channels
+        :param out_channels: number of output channels. Doubles in_channel if None
+        :param n_convs: number of sequential convolutions
+        :param max_pool: boolean flag whether to put max pooling layer or not
+        """
         if not out_channels:
             out_channels = in_channels * 2
 
@@ -48,6 +54,7 @@ class FacedModel(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        # Forward pass of the model
         x = x.float()
         x = self.layer1(x)
         x = self.layer2(x)
@@ -57,4 +64,5 @@ class FacedModel(nn.Module):
         x = self.layer6(x)
         x = self.layer7(x)
         x = self.layer8(x)
+        # Output tensor has shape [5 * number of bboxes, number of grid cells, number of grid cells]
         return x

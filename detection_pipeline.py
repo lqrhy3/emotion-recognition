@@ -2,6 +2,7 @@ import cv2
 from utils.transforms import ImageToTensor
 import torch
 from tiny_yolo_model import TinyYolo
+from faced_model import FacedModel
 import numpy as np
 import os
 from utils.utils import xywh2xyxy, from_yolo_target
@@ -9,34 +10,33 @@ from data.detection.show_targets import show_rectangles
 import time
 
 
+# Initialising detection model
 PATH_TO_MODEL = 'checkpoint.pt'
 
-model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
-load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
+# model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
+model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
+# load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
+load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', PATH_TO_MODEL))
 model.load_state_dict(load['model_state_dict'])
-
-
 model.eval()
-
 
 cap = cv2.VideoCapture(0)
 
-
-while cap.isOpened():
+while cap.isOpened():  # Capturing video
     ret, image = cap.read()
     start = time.time()
+
+    # Image preprocessing for format and shape required by model
     image = cv2.resize(image, (320, 320))
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
-    output = model(image)
-    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=5, num_bboxes=2)
-    pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]
+    output = model(image)  # Prediction
+    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=5, num_bboxes=2)  # Converting from tensor format to list
+    pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]  # Selecting most confident cell
     show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)),
-                    np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), pred_output[:, 4])
+                    np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), str(pred_output[:, 4]))  # Painting bbox
     fps = 1. / (time.time() - start)
-    # print(fps)
-    pred_xyxy = xywh2xyxy(pred_output[:, :4])
-    print(pred_xyxy)
+    print(fps)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 

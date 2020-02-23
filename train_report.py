@@ -21,7 +21,7 @@ def get_inference_time(model, pth_to_data):
     model(image)
     inference_time = time.time_ns() - start
 
-    return inference_time * 1e9
+    return inference_time / 1e9
 
 
 def make_report(PATH_TO_LOG, input_shape):
@@ -33,7 +33,7 @@ def make_report(PATH_TO_LOG, input_shape):
     line_for_image = 5
 
     load = torch.load(os.path.join(PATH_TO_LOG, 'checkpoint.pt'))
-    model = torch.load(os.path.join(PATH_TO_LOG, 'detection_model.pt'))
+    model = torch.load(os.path.join(PATH_TO_LOG, 'model.pt'))
     model.load_state_dict(load['model_state_dict'])
     model.to(torch.device('cpu'))
 
@@ -41,7 +41,7 @@ def make_report(PATH_TO_LOG, input_shape):
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape, device='cpu')
     model_summary += '----------------------------------------------------------------\n'
-    model_summary += 'Estimated inference time (secons per image): ' + str(inference_time) + '\n'
+    model_summary += 'Estimated inference time (seconds per image): ' + str(inference_time) + '\n'
     log_file = ''
 
     for file in os.listdir(PATH_TO_LOG):
@@ -119,15 +119,24 @@ def make_report(PATH_TO_LOG, input_shape):
     pdf.set_font('times', size=12, style='B')
     pdf.cell(200, 7, txt='Results:', ln=1, align='L')
     line_for_image += 7
-    pdf.image(os.path.join(PATH_TO_LOG, 'graphs.png'), x=45, y=line_for_image, w=100)
 
-    pdf.add_page()
+
+    # pdf.add_page()
 
     pdf.set_font('courier', size=8)
     pdf.cell(200, 3, txt=f'Train loss on the last epoch: {total_loss[-1]}', ln=1, align='L')
     pdf.cell(200, 3, txt=f'Validation loss on the last epoch: {valid_loss[-1]} ', ln=1, align='L')
     pdf.cell(200, 3, txt=f'Validation metrics on the last epoch: {valid_metrics[-1]} ', ln=1, align='L')
+    line_for_image += 20
 
+    print(line_for_image)
+    if line_for_image > 266:
+        line_for_image = line_for_image % 266
+    elif line_for_image > 230:
+        pdf.add_page()
+        line_for_image = 10
+
+    pdf.image(os.path.join(PATH_TO_LOG, 'graphs.png'), x=45, y=line_for_image, w=100)
     pdf.output(os.path.join(PATH_TO_LOG, 'report.pdf'))
 
 
@@ -158,4 +167,8 @@ if __name__ == '__main__':
         PATH_TO_LOGDIR = find_last_dir()
         input_size = 448
 
-    make_report(PATH_TO_LOGDIR, (3, 320, 320))
+    make_report("D:\\Emotion-Recognition-PRJCT2019\\log\\detection\\20.01.15_01-28", (3, 320, 320))
+
+
+#266 конец страницы
+
