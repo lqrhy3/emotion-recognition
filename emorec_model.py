@@ -20,9 +20,9 @@ class MiniXception(nn.Module):
         self.bn2 = nn.BatchNorm2d(8)
         self.act2 = nn.ReLU()
 
-        self.blocks = self._make_xception_blocks(in_channels=8, n=4)
+        self.blocks = self._make_xception_blocks(in_channels=8, n=6)
 
-        self.sepconv = DepthwiseSeparableConv(in_channels=128, out_channels=16)
+        self.sepconv = DepthwiseSeparableConv(in_channels=512, out_channels=16)
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(16, num_classes)
 

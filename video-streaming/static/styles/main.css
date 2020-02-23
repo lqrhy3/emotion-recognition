@@ -1,0 +1,51 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    background-image: url("../img/background.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    background-color: aliceblue;
+    padding: 50px;
+    overflow: hidden;
+}
+
+.content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+
+h1 {
+    color: #fff;
+    font: 3em 'PT Sans', sans-serif;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 70px;
+
+}
+
+.img-dem {
+    width: 640px;
+    height: 480px;
+    display: block;
+    margin: 0 auto;
+    background-color: #ccc;
+    border: 10px solid #fff;
+}
+
+p {
+    display: block;
+    width: 640px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+a {
+    color: #e2e2e2;
+    font: 1.2em 'PT Sans', sans-serif;
+
+}
