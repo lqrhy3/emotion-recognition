@@ -11,12 +11,12 @@ from utils.summary import summary
 from utils.transforms import ImageToTensor
 
 
-def get_inference_time(model, pth_to_data):
+def get_inference_time(model, shape, pth_to_data):
     """:param model: model weights
        :param pth_to_data: path to data
        :return inference_time: model inference time in seconds"""
     image = cv2.imread(pth_to_data)
-    image = cv2.resize(image, (320, 320))
+    image = cv2.resize(image, (shape, shape))
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
 
@@ -38,15 +38,15 @@ def make_report(PATH_TO_LOG, input_shape):
     line_for_image = 5
 
     load = torch.load(os.path.join(PATH_TO_LOG, 'checkpoint.pt'))
-    model = torch.load(os.path.join(PATH_TO_LOG, 'detection_model.pt'))
+    model = torch.load(os.path.join(PATH_TO_LOG, 'model.pt'))
     model.load_state_dict(load['model_state_dict'])
     model.to(torch.device('cpu'))
 
-    inference_time = get_inference_time(model, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
+    # inference_time = get_inference_time(model, input_size, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape, device='cpu')
     model_summary += '----------------------------------------------------------------\n'
-    model_summary += 'Estimated inference time (secons per image): ' + str(inference_time) + '\n'
+    # model_summary += 'Estimated inference time (secons per image): ' + str(inference_time) + '\n'
     log_file = ''
 
     for file in os.listdir(PATH_TO_LOG):
@@ -158,11 +158,12 @@ if __name__ == '__main__':
        :param sys.argv[2] (optional): size of input image"""
     if len(sys.argv) == 2:
         PATH_TO_LOGDIR = sys.argv[1]
-        input_size = 448
+        input_size = 64
     elif len(sys.argv) == 3:
         PATH_TO_LOGDIR = sys.argv[1]
         input_size = int(sys.argv[2])
     else:
         PATH_TO_LOGDIR = find_last_dir()
-        input_size = 448
+        input_size = 64
 
+    make_report(PATH_TO_LOGDIR, (1, input_size, input_size))
