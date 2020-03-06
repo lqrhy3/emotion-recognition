@@ -24,16 +24,16 @@ def bbox_resize(coords, from_shape, to_shape):
 
 
 # Declaring paths to models and hyperparameters
-PATH_TO_DETECTION_MODEL = 'log\\detection\\20.01.13_12-53'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.01.25_03-16'
+PATH_TO_DETECTION_MODEL = 'log\\detection\\20.02.24_17-07'
+PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.06_03-30'
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 DETECTION_SHAPE = (320, 320)
 EMOREC_SHAPE = (64, 64)
 DETECTION_TRESHOLD = 0.4
 
 # Initialising models weights
-detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'))
-detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'))
+detection_model = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'model.pt'))
+detection_load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'checkpoint.pt'))
 detection_model.load_state_dict(detection_load['model_state_dict'])
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -41,16 +41,13 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 detection_model.to(device)
 detection_model.eval()
 
-recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'detection_model.pt'))
+recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model.pt'))
 recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'))
 recognition_model.load_state_dict(recognition_load['model_state_dict'])
 
 recognition_model.to(device)
 recognition_model.eval()
 
-detection_predict = []
-handling_detection = []
-recognition_predict = []
 cap = cv2.VideoCapture(0)
 
 # Start video capturing

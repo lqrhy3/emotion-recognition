@@ -1,4 +1,4 @@
-from emorec_model import *
+from models.emorec_model import *
 import numpy as np
 import datetime
 import os
@@ -67,7 +67,7 @@ if not TEST:
     logger.start_info(hyperparameters=hyperparameters, optim=optim, transforms=train_transforms, comment=COMMENT)
 
 
-torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'detection_model.pt'))
+torch.save(model, os.path.join(PATH_TO_LOG, SESSION_ID, 'model.pt'))
 # Training loop
 for epoch in range(n_epoch):
     batch_train_loss = 0

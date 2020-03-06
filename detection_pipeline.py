@@ -1,8 +1,8 @@
 import cv2
 from utils.transforms import ImageToTensor
 import torch
-from tiny_yolo_model import TinyYolo
-from faced_model import FacedModel
+from models.tiny_yolo_model import TinyYolo
+from models.faced_model import FacedModel
 import numpy as np
 import os
 from utils.utils import xywh2xyxy, from_yolo_target
@@ -14,7 +14,8 @@ import time
 PATH_TO_MODEL = 'checkpoint.pt'
 
 # model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
-model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
+# model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
+model = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'model.pt'))
 # load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
 load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', PATH_TO_MODEL))
 model.load_state_dict(load['model_state_dict'])

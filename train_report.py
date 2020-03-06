@@ -11,12 +11,12 @@ from utils.summary import summary
 from utils.transforms import ImageToTensor
 
 
-def get_inference_time(model, pth_to_data):
+def get_inference_time(model, pth_to_data, input_shape):
     """:param model: model weights
        :param pth_to_data: path to data
        :return inference_time: model inference time in seconds"""
     image = cv2.imread(pth_to_data)
-    image = cv2.resize(image, (320, 320))
+    image = cv2.resize(image, input_shape[1:])
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
 
@@ -42,7 +42,9 @@ def make_report(PATH_TO_LOG, input_shape):
     model.load_state_dict(load['model_state_dict'])
     model.to(torch.device('cpu'))
 
-    inference_time = get_inference_time(model, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
+    inference_time = get_inference_time(model,
+                                        pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg',
+                                        input_shape=input_shape)
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape, device='cpu')
     model_summary += '----------------------------------------------------------------\n'
@@ -84,17 +86,19 @@ def make_report(PATH_TO_LOG, input_shape):
 
     # Writing to report
     plt.subplot(2, 1, 1)
-    plt.plot(valid_loss, 'r')
-    plt.plot(total_loss, 'g')
+    plt.grid()
+    plt.plot(valid_loss)
+    plt.plot(total_loss)
     plt.legend(['Validation loss', 'Train loss'])
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
 
     plt.subplot(2, 1, 2)
-    plt.plot(valid_metrics)
-    plt.legend(['Validation metric'])
+    plt.grid()
+    plt.plot(valid_metrics, c='crimson')
+    plt.legend(['Validation metrics'])
     plt.xlabel('Epoch')
-    plt.ylabel('Validation metric')
+    plt.ylabel('Validation metrics')
 
     plt.savefig(os.path.join(PATH_TO_LOG, 'graphs.png'))
 
@@ -134,7 +138,6 @@ def make_report(PATH_TO_LOG, input_shape):
     pdf.cell(200, 3, txt=f'Validation metrics on the last epoch: {valid_metrics[-1]} ', ln=1, align='L')
     line_for_image += 20
 
-    print(line_for_image)
     if line_for_image > 266:
         line_for_image = line_for_image % 266
     elif line_for_image > 230:
@@ -167,11 +170,12 @@ if __name__ == '__main__':
        :param sys.argv[2] (optional): size of input image"""
     if len(sys.argv) == 2:
         PATH_TO_LOGDIR = sys.argv[1]
-        input_size = 448
+        input_shape = 448
     elif len(sys.argv) == 3:
         PATH_TO_LOGDIR = sys.argv[1]
-        input_size = int(sys.argv[2])
+        input_shape = int(sys.argv[2])
     else:
         PATH_TO_LOGDIR = find_last_dir()
-        input_size = 448
+        input_shape = 448
 
+    make_report(PATH_TO_LOGDIR, (3, 448, 448))
