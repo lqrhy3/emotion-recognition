@@ -47,12 +47,13 @@ class Camera(BaseCamera):
 
     @staticmethod
     def frames():
-        camera = cv2.VideoCapture(Camera.video_source)
+        camera = cv2.VideoCapture(0)
         if not camera.isOpened():
             raise RuntimeError('Could not start camera.')
 
         while True:
             # read current frame
             _, image = camera.read()
-            yield stream_prediction(image, detection_model, recognition_model, device)
+            image = stream_prediction(image, detection_model, recognition_model, device)
+            yield image
 

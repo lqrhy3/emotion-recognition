@@ -11,20 +11,20 @@ from utils.summary import summary
 from utils.transforms import ImageToTensor
 
 
-def get_inference_time(model, shape, pth_to_data):
+def get_inference_time(model, pth_to_data):
     """:param model: model weights
        :param pth_to_data: path to data
        :return inference_time: model inference time in seconds"""
     image = cv2.imread(pth_to_data)
-    image = cv2.resize(image, (shape, shape))
+    image = cv2.resize(image, (320, 320))
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
 
     start = time.time_ns()
     model(image)
     inference_time = time.time_ns() - start
-    inference_time *= 1e9
-    return inference_time
+
+    return inference_time / 1e9
 
 
 def make_report(PATH_TO_LOG, input_shape):
@@ -42,11 +42,11 @@ def make_report(PATH_TO_LOG, input_shape):
     model.load_state_dict(load['model_state_dict'])
     model.to(torch.device('cpu'))
 
-    # inference_time = get_inference_time(model, input_size, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
+    inference_time = get_inference_time(model, pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg')
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape, device='cpu')
     model_summary += '----------------------------------------------------------------\n'
-    # model_summary += 'Estimated inference time (secons per image): ' + str(inference_time) + '\n'
+    model_summary += 'Estimated inference time (seconds per image): ' + str(inference_time) + '\n'
     log_file = ''
 
     for file in os.listdir(PATH_TO_LOG):
@@ -132,7 +132,16 @@ def make_report(PATH_TO_LOG, input_shape):
     pdf.cell(200, 3, txt=f'Train loss on the last epoch: {total_loss[-1]}', ln=1, align='L')
     pdf.cell(200, 3, txt=f'Validation loss on the last epoch: {valid_loss[-1]} ', ln=1, align='L')
     pdf.cell(200, 3, txt=f'Validation metrics on the last epoch: {valid_metrics[-1]} ', ln=1, align='L')
+    line_for_image += 20
 
+    print(line_for_image)
+    if line_for_image > 266:
+        line_for_image = line_for_image % 266
+    elif line_for_image > 230:
+        pdf.add_page()
+        line_for_image = 10
+
+    pdf.image(os.path.join(PATH_TO_LOG, 'graphs.png'), x=45, y=line_for_image, w=100)
     pdf.output(os.path.join(PATH_TO_LOG, 'report.pdf'))
 
 
@@ -158,12 +167,11 @@ if __name__ == '__main__':
        :param sys.argv[2] (optional): size of input image"""
     if len(sys.argv) == 2:
         PATH_TO_LOGDIR = sys.argv[1]
-        input_size = 64
+        input_size = 448
     elif len(sys.argv) == 3:
         PATH_TO_LOGDIR = sys.argv[1]
         input_size = int(sys.argv[2])
     else:
         PATH_TO_LOGDIR = find_last_dir()
-        input_size = 64
+        input_size = 448
 
-    make_report(PATH_TO_LOGDIR, (1, input_size, input_size))

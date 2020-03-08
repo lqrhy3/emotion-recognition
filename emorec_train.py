@@ -33,6 +33,8 @@ train_transforms = transforms.Compose([
     transforms.ToTensor()
 ])
 
+
+# Initialising dataset and dataloaders for train/validation stages
 dataset = EmoRecDataset(transform=train_transforms, path='data/fer', emotions=emotions)
 
 dataset_len = len(dataset)
@@ -50,7 +52,7 @@ train_len = len(train_dataloader)
 
 loss = CrossEntropyLoss(reduction='mean')
 
-# Initiating detection_model and device (cuda/cpu)
+# Initiating model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 model = MiniXception(emotion_map=emotions, in_channels=dataset.img_channels).to(device)
 
@@ -90,12 +92,12 @@ for epoch in range(n_epoch):
                 pred_class = pred.argmax(dim=1)
                 loss_value = loss(pred, label)
 
-                if phase == 'train':
+                if phase == 'train':  # Train step
                     print('{0}/{1}'.format(i + 1, train_len))
                     loss_value.backward()
                     optim.step()
                     batch_train_loss += loss_value.item()
-                else:
+                else:  # Validation metrics computing
                     batch_val_loss += loss_value.item()
                     batch_val_metric += (pred_class == label.data).float().mean().item()
 
@@ -104,11 +106,11 @@ for epoch in range(n_epoch):
     epoch_val_metric = batch_val_metric / len(val_dataloader)
 
     if not TEST:
-        # Saving
+        # Logger update
         logger.epoch_info(epoch=epoch, train_loss=epoch_train_loss,
                           val_loss=epoch_val_loss, val_metrics=epoch_val_metric)
         if epoch % 5 == 0:
-            # Checkpoint. Train info
+            # Save checkpoint. Model weights and train info
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
