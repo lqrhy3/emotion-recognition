@@ -19,7 +19,7 @@ SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'MiniXception FER'
 
 # Declaring hyperparameters
-n_epoch = 101
+n_epoch = 51
 batch_size = 64
 val_split = 0.05
 lr = 0.001

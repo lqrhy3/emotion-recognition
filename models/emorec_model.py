@@ -25,17 +25,15 @@ class MiniXception(nn.Module):
         self.bn2 = nn.BatchNorm2d(8)
         self.act2 = nn.ReLU()
 
-        self.blocks = self._make_xception_blocks(in_channels=8, n=6)
+        self.blocks = self._make_xception_blocks(in_channels=8, n=3)
 
-        self.sepconv = DepthwiseSeparableConv(in_channels=512, out_channels=16)
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(16, num_classes)
+        self.fc = nn.Linear(64, num_classes)
 
     def forward(self, x):
         x = self.act1(self.bn1(self.conv1(x)))
         x = self.act2(self.bn2(self.conv2(x)))
         x = self.blocks(x)
-        x = self.sepconv(x)
         x = self.pool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
