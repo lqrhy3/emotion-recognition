@@ -24,15 +24,15 @@ def bbox_resize(coords, from_shape, to_shape):
 
 
 # Declaring paths to models and hyperparameters
-PATH_TO_DETECTION_MODEL = 'log\\detection\\20.02.24_17-07'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.06_03-30'
+PATH_TO_DETECTION_MODEL = 'log\\detection\\20.02.19_22-15'
+PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.12_02-31'
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 DETECTION_SHAPE = (320, 320)
 EMOREC_SHAPE = (64, 64)
 DETECTION_TRESHOLD = 0.4
 
 # Initialising models weights
-detection_model = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'model.pt'))
+detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'))
 detection_load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'checkpoint.pt'))
 detection_model.load_state_dict(detection_load['model_state_dict'])
 

@@ -19,7 +19,7 @@ SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'MiniXception FER'
 
 # Declaring hyperparameters
-n_epoch = 51
+n_epoch = 101
 batch_size = 64
 val_split = 0.05
 lr = 0.001
@@ -29,7 +29,7 @@ emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 train_transforms = transforms.Compose([
     transforms.Resize(64),
     transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(15),
+    #transforms.RandomRotation(15),
     transforms.ToTensor()
 ])
 
@@ -93,7 +93,7 @@ for epoch in range(n_epoch):
                 loss_value = loss(pred, label)
 
                 if phase == 'train':  # Train step
-                    print('{0}/{1}'.format(i + 1, train_len))
+                    #print('{0}/{1}'.format(i + 1, train_len))
                     loss_value.backward()
                     optim.step()
                     batch_train_loss += loss_value.item()
