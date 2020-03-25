@@ -2,8 +2,6 @@ import torch
 import torch.nn.functional as F
 from collections import Counter
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
 
 class LossCounter(Counter):
     def __init__(self, *args, **kwargs):
@@ -146,7 +144,9 @@ class Loss(torch.nn.Module):
         bbox_pred_response = bbox_pred[obj_response_mask].view(-1, 5)
         bbox_target_response = bbox_target[obj_response_mask].view(-1, 5)
         # bbox_target_response = bbox_target[obj_response_target_mask].view(-1, 5)
-        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5).cuda()#to(device)
+        target_iou = bbox_target_iou[obj_response_mask].view(-1, 5)
+        if str(target.device).startswith('cuda'):
+            target_iou = target_iou.cuda()
 
         loss_xy = F.mse_loss(bbox_pred_response[:, :2], bbox_target_response[:, :2], reduction='sum')
         loss_wh = F.mse_loss(bbox_pred_response[:, 2:4], bbox_target_response[:, 2:4], reduction='sum')

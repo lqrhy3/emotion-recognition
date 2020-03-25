@@ -18,19 +18,19 @@ TASK = 'detection'  # detection or emorec
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'FacedModel. 5x5 grid cell. 7 layers.'
+COMMENT = 'QUANTIZATION TEST'
 
 if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
-n_epoch = 101
+n_epoch = 2
 batch_size = 10
 image_size = (320, 320)
 grid_size = 5
 num_bboxes = 2
-val_split = 0.08
+val_split = 0.1
 
 # Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
