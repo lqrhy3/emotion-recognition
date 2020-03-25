@@ -18,11 +18,11 @@ class MiniXception(nn.Module):
         self.emotion_map = emotion_map
 
         self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=8, kernel_size=3, stride=2, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(8)
+        self.bn1 = nn.BatchNorm2d(num_features=8)
         self.act1 = nn.ReLU()
 
         self.conv2 = nn.Conv2d(in_channels=8, out_channels=8, kernel_size=3, stride=2, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(8)
+        self.bn2 = nn.BatchNorm2d(num_features=8)
         self.act2 = nn.ReLU()
 
         self.blocks = self._make_xception_blocks(in_channels=8, n=3)
@@ -30,14 +30,20 @@ class MiniXception(nn.Module):
         self.pool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(64, num_classes)
 
+        self.quant = torch.quantization.QuantStub()
+        self.dequant = torch.quantization.DeQuantStub()
+
     def forward(self, x):
+        x = self.quant(x)
         x = self.act1(self.bn1(self.conv1(x)))
         x = self.act2(self.bn2(self.conv2(x)))
         x = self.blocks(x)
         x = self.pool(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
+        x = self.dequant(x)
         return x
+
 
     @staticmethod
     def _make_xception_blocks(in_channels, n):
@@ -49,6 +55,12 @@ class MiniXception(nn.Module):
 
         return nn.Sequential(*blocks)
 
+    def fuse_model(self):
+        torch.quantization.fuse_modules(self, [['conv1', 'bn1', 'act1'], ['conv2', 'bn2', 'act2']], inplace=True)
+        for mxblock in self.blocks.children():
+            torch.quantization.fuse_modules(mxblock, [['res_conv.0', 'res_conv.1']], inplace=True)
+            torch.quantization.fuse_modules(mxblock, [['block.0.pointwise', 'block.1', 'block.2'], ['block.3.pointwise', 'block.4']], inplace=True)
+
 
 class MiniXceptionBlock(nn.Module):
     def __init__(self, in_channels):
@@ -57,7 +69,7 @@ class MiniXceptionBlock(nn.Module):
         self.out_channels = 2 * self.in_channels
 
         self.res_conv = nn.Sequential(
-            nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, stride=2, padding=0),
+            nn.Conv2d(self.in_channels, self.out_channels, kernel_size=1, stride=2, padding=0, bias=False),
             nn.BatchNorm2d(self.out_channels)
         )
         self.block = nn.Sequential(
@@ -69,8 +81,10 @@ class MiniXceptionBlock(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
 
+        self.skip_add = torch.nn.quantized.FloatTensor()
+
     def forward(self, x):
-        return self.res_conv(x) + self.block(x)
+        return self.skip_add.add(self.res_conv(x), self.block(x))
 
 
 class DepthwiseSeparableConv(nn.Module):
@@ -167,3 +181,10 @@ class PretrConvNet(nn.Module):
 
     def forward(self, x):
         return self.backbone(x)
+
+
+if __name__ == '__main__':
+    model = MiniXception(['', '', ''])
+    #print(*list(model.blocks.children()), sep='\n-------------------------------------\n')
+    model.fuse_model()
+    print(model)

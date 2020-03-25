@@ -13,9 +13,9 @@ def get_size_model(model):
     os.remove("temp.pt")
     return size
 
-# POST TRAINIG QUANTIZATION
+# POST TRAINING QUANTIZATION
 
-PATH_TO_MODEL_FLOAT = 'log/detection/20.03.25_17-52'
+PATH_TO_MODEL_FLOAT = 'log/detection/20.03.25_18-50'
 image_size = (320, 320)
 batch_size = 1
 num_calibration_batches = 5
@@ -27,7 +27,8 @@ model.eval()
 print("Size of model before quntization:", get_size_model(model))
 
 model.fuse_model()
-model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
+# model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
+model.qconfig = torch.quantization.default_qconfig
 torch.quantization.prepare(model, inplace=True)
 
 loss = Loss(model.S, model.B)

@@ -85,18 +85,11 @@ class FacedModel(nn.Module):
         return x
 
     def fuse_model(self):
-        for m in self.modules():
+        for m in self.children():
             if type(m) == ConvBlock:
-                for conv_m in m.modules():
+                for conv_m in m.children():
                     if type(conv_m) == nn.Sequential:
                         for i in range(0, m.n_convs):
                             torch.quantization.fuse_modules(conv_m,
                                                             [str(3 * i), str(3 * i + 1), str(3 * i + 2)],
                                                             inplace=True)
-
-
-if __name__ == '__main__':
-    model = FacedModel(5, 2)
-    print(model, end='_______________________________________________________\n')
-    model.fuse_model()
-    print(model)
