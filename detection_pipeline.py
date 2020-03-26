@@ -11,14 +11,16 @@ import time
 
 
 # Initialising detection model
-PATH_TO_MODEL = 'checkpoint.pt'
+PATH_TO_MODEL = 'log/detection/20.03.26_17-52'
 
 # model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
 # model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
-model = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'model.pt'))
-# load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
-load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', PATH_TO_MODEL))
-model.load_state_dict(load['model_state_dict'])
+
+# model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'), map_location='cpu')
+# load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
+# model.load_state_dict(load['model_state_dict'])
+
+model = torch.jit.load(os.path.join(PATH_TO_MODEL, 'model_quantized.zip'))
 model.eval()
 
 cap = cv2.VideoCapture(0)
