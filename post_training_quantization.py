@@ -27,8 +27,7 @@ model.eval()
 print("Size of model before quntization:", get_size_model(model))
 
 model.fuse_model()
-# model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
-model.qconfig = torch.quantization.default_qconfig
+model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
 torch.quantization.prepare(model, inplace=True)
 
 loss = Loss(model.S, model.B)

@@ -18,19 +18,19 @@ TASK = 'detection'  # detection or emorec
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'FacedModel, 5x5 grid, QuantStub enabled'
+COMMENT = 'FacedModel, 9x9 grid, QuantStub enabled. light version'
 
 if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger('logger', task=TASK, session_id=SESSION_ID)
 
 # Declaring hyperparameters
-n_epoch = 101
-batch_size = 11
-image_size = (320, 320)
-grid_size = 5
+n_epoch = 130
+batch_size = 26
+image_size = (288, 288)
+grid_size = 9
 num_bboxes = 2
-val_split = 0.08
+val_split = 0.03
 
 # Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -87,7 +87,6 @@ for epoch in range(n_epoch):
         else:
             dataloader = val_dataloader
             model.eval()
-
         for i, (image, target, face_rect) in enumerate(dataloader):
             image = image.to(device)
             target = target.to(device)

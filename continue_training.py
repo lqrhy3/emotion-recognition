@@ -1,5 +1,5 @@
 import torch
-from tiny_yolo_model import TinyYolo
+from models.faced_model import FacedModel
 from utils.logger import Logger
 from utils.datasets import DetectionDataset
 from torch.utils.data import DataLoader, SubsetRandomSampler
@@ -12,14 +12,14 @@ import datetime
 import numpy as np
 
 
-PATH_TO_TRAIN_DIR = 'log/detection/20.01.13_12-53'
+PATH_TO_TRAIN_DIR = 'log/detection/20.03.25_19-34'
 load = torch.load(os.path.join(PATH_TO_TRAIN_DIR, 'checkpoint.pt'))
 
 logger = Logger('logger', task='detection', session_id=PATH_TO_TRAIN_DIR.split('/')[2])
 
 # Declaring hyperparameters
-n_epoch = 101
-batch_size = 21
+n_epoch = 120
+batch_size = 11
 image_size = (320, 320)
 grid_size = 5
 num_bboxes = 2
@@ -27,7 +27,7 @@ val_split = 0.03
 
 # Initiating detection_model and device (cuda/cpu)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-model = torch.load(os.path.join(PATH_TO_TRAIN_DIR, 'detection_model.pt'))
+model = torch.load(os.path.join(PATH_TO_TRAIN_DIR, 'model.pt'))
 model.load_state_dict(load['model_state_dict'])
 
 # Initiating optimizer and scheduler for training steps
@@ -96,10 +96,9 @@ for epoch in range(int(load['epoch']), n_epoch):
 
                     batch_train_loss += logger_loss
                 else:
-                    # Computing metrics at validation phase
-
                     face_rect.to(device)
-                    listed_output = torch.tensor(from_yolo_target(output, image_w=image_size[0], grid_size=grid_size, num_bboxes=num_bboxes))
+                    listed_output = torch.tensor(
+                        from_yolo_target(output, image_w=image_size[0], grid_size=grid_size, num_bboxes=num_bboxes))
                     preds = torch.empty((listed_output.size(0), 5))
                     idxs = torch.argmax(listed_output[:, :, 4], dim=1)
                     for batch in range(listed_output.size(0)):

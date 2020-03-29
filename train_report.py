@@ -42,13 +42,13 @@ def make_report(PATH_TO_LOG, input_shape):
     model.load_state_dict(load['model_state_dict'])
     model.to(torch.device('cpu'))
 
-    inference_time = get_inference_time(model,
-                                        pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg',
-                                        input_shape=input_shape)
+    # inference_time = get_inference_time(model,
+    #                                     pth_to_data='data/detection/train_images_v2/0_Parade_marchingband_1_732.jpg',
+    #                                     input_shape=input_shape)
     model_name = model.__class__.__name__
     model_summary = summary(model, input_shape, device='cpu')
     model_summary += '----------------------------------------------------------------\n'
-    model_summary += 'Estimated inference time (seconds per image): ' + str(inference_time) + '\n'
+    #model_summary += 'Estimated inference time (seconds per image): ' + str(inference_time) + '\n'
     log_file = ''
 
     for file in os.listdir(PATH_TO_LOG):
@@ -178,4 +178,4 @@ if __name__ == '__main__':
         PATH_TO_LOGDIR = find_last_dir()
         input_shape = 448
 
-    make_report(PATH_TO_LOGDIR, (3, 448, 448))
+    make_report(PATH_TO_LOGDIR, (1, 64, 64))

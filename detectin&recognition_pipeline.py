@@ -24,8 +24,8 @@ def bbox_resize(coords, from_shape, to_shape):
 
 
 # Declaring paths to models and hyperparameters
-PATH_TO_DETECTION_MODEL = 'log\\detection\\20.02.19_22-15'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.12_02-31'
+PATH_TO_DETECTION_MODEL = 'log\\detection\\20.03.26_02-14'
+PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.29_13-31'
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 DETECTION_SHAPE = (320, 320)
 EMOREC_SHAPE = (64, 64)
@@ -33,7 +33,7 @@ DETECTION_TRESHOLD = 0.4
 
 # Initialising models weights
 detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'))
-detection_load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'checkpoint.pt'))
+detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'))
 detection_model.load_state_dict(detection_load['model_state_dict'])
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

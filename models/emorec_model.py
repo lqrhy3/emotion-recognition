@@ -44,7 +44,6 @@ class MiniXception(nn.Module):
         x = self.dequant(x)
         return x
 
-
     @staticmethod
     def _make_xception_blocks(in_channels, n):
         cur_channels = in_channels
@@ -81,7 +80,7 @@ class MiniXceptionBlock(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         )
 
-        self.skip_add = torch.nn.quantized.FloatTensor()
+        self.skip_add = torch.nn.quantized.FloatFunctional()
 
     def forward(self, x):
         return self.skip_add.add(self.res_conv(x), self.block(x))

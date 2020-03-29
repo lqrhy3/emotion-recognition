@@ -15,11 +15,11 @@ PATH_TO_MODEL = 'checkpoint.pt'
 
 # model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
 # model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
-model = torch.load(os.path.join('log\\detection', '20.02.19_22-15', 'model.pt'))
+model = torch.load(os.path.join('log\\detection', '20.03.26_12-28', 'model.pt'))
 # load = torch.load(os.path.join('log\\detection', '20.01.13_12-53', PATH_TO_MODEL))
-load = torch.load(os.path.join('log\\detection', '20.02.19_22-15', PATH_TO_MODEL))
+load = torch.load(os.path.join('log\\detection', '20.03.26_12-28', PATH_TO_MODEL))
 model.load_state_dict(load['model_state_dict'])
-model.eval()
+model.to('cpu').eval()
 
 cap = cv2.VideoCapture(0)
 
@@ -28,11 +28,11 @@ while cap.isOpened():  # Capturing video
     start = time.time()
 
     # Image preprocessing for format and shape required by model
-    image = cv2.resize(image, (320, 320))
+    image = cv2.resize(image, (288, 288))
     image = ImageToTensor()(image)
     image = image.unsqueeze(0)
     output = model(image)  # Prediction
-    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=5, num_bboxes=2)  # Converting from tensor format to list
+    listed_output = from_yolo_target(output[:, :10, :, :], image.size(2), grid_size=9, num_bboxes=2)  # Converting from tensor format to list
     pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]  # Selecting most confident cell
     show_rectangles(image.numpy().squeeze(0).transpose((1, 2, 0)),
                     np.expand_dims(xywh2xyxy(pred_output[:, :4]), axis=0), str(pred_output[:, 4]))  # Painting bbox

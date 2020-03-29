@@ -1,5 +1,6 @@
 from models.emorec_model import *
 import numpy as np
+import albumentations
 import datetime
 import os
 from utils.logger import Logger
@@ -9,6 +10,8 @@ from torch.utils.data import DataLoader, SubsetRandomSampler
 from torch.nn import CrossEntropyLoss
 import torch
 import warnings
+import matplotlib.pyplot as plt
+from PIL import Image
 
 warnings.filterwarnings('ignore')
 # Declaring constants for logging and creating dir for current experiment. Initiating logger.
@@ -19,17 +22,19 @@ SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'MiniXception FER'
 
 # Declaring hyperparameters
-n_epoch = 101
+n_epoch = 131
 batch_size = 64
-val_split = 0.05
-lr = 0.001
+val_split = 0.03
+lr = 0.0001
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 
 
 train_transforms = transforms.Compose([
     transforms.Resize(64),
     transforms.RandomHorizontalFlip(),
-    #transforms.RandomRotation(15),
+    transforms.RandomRotation(15, fill=(0,)),
+    #albumentations.augmentations.transforms.GaussNoise(var_limit=20),
+    transforms.Grayscale(),
     transforms.ToTensor()
 ])
 
