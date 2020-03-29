@@ -16,10 +16,10 @@ TASK = 'emorec'
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'MiniXception quantization test'
+COMMENT = 'MiniXception rotation test'
 
 # Declaring hyperparameters
-n_epoch = 101
+n_epoch = 2
 batch_size = 64
 val_split = 0.05
 lr = 0.001
@@ -29,7 +29,7 @@ emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 train_transforms = transforms.Compose([
     transforms.Resize(64),
     transforms.RandomHorizontalFlip(),
-    #transforms.RandomRotation(15),
+    transforms.RandomRotation(15, fill=(0,)),
     transforms.ToTensor()
 ])
 

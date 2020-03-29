@@ -61,13 +61,12 @@ transforms_recognition = transforms.Compose([
     transforms.ToTensor()
 ])
 
-dataset_recognition = EmoRecDataset(transform=transforms_recognition, path='data/fer', emotions=emotions)
-dataset_detection = DetectionDataset(transform=transforms_detection, grid_size=model.S, num_bboxes=model.B)
-
 if MODEL_TO_QUANTIZE == 'detection':
+    dataset_detection = DetectionDataset(transform=transforms_detection, grid_size=model.S, num_bboxes=model.B)
     dataloader = DataLoader(dataset_detection, batch_size=batch_size)
     calibration_detection(model, dataloader, Loss(grid_size=model.S, num_bboxes=model.B))
 else:
+    dataset_recognition = EmoRecDataset(transform=transforms_recognition, path='data/fer', emotions=emotions)
     dataloader = DataLoader(dataset_recognition, batch_size=batch_size)
     calibration_recognition(model, dataloader, CrossEntropyLoss(reduction='mean'))
 
