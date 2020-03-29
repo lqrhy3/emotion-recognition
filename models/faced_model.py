@@ -143,9 +143,3 @@ class FacedModelLite(nn.Module):
                             torch.quantization.fuse_modules(conv_m,
                                                             [str(3 * i), str(3 * i + 1), str(3 * i + 2)],
                                                             inplace=True)
-
-
-if __name__ == '__main__':
-    model = FacedModelLite(grid_size=9, num_bboxes=2)
-    model.fuse_model()
-    print(model)

@@ -8,10 +8,14 @@ from utils.datasets import EmoRecDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from torch.nn import CrossEntropyLoss
+from data.detection import show_targets
 import torch
 import warnings
+from albumentations.pytorch.transforms import ToTensor
 import matplotlib.pyplot as plt
 from PIL import Image
+import cv2
+from utils.transforms import GaussNoise
 
 warnings.filterwarnings('ignore')
 # Declaring constants for logging and creating dir for current experiment. Initiating logger.
@@ -19,28 +23,30 @@ TASK = 'emorec'
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'MiniXception quantization test'
+COMMENT = 'MiniXception TEST'
 
 # Declaring hyperparameters
-n_epoch = 131
-batch_size = 64
+n_epoch = 211
+batch_size = 63
 val_split = 0.03
 lr = 0.0001
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 
 
 train_transforms = transforms.Compose([
-    transforms.Resize(64),
+    transforms.Resize((64, 64)),
     transforms.RandomHorizontalFlip(),
     transforms.RandomRotation(15, fill=(0,)),
-    #albumentations.augmentations.transforms.GaussNoise(var_limit=20),
+    GaussNoise(var_limit=(0, 100), p=0.7),
     transforms.Grayscale(),
     transforms.ToTensor()
 ])
 
 
+
+
 # Initialising dataset and dataloaders for train/validation stages
-dataset = EmoRecDataset(transform=train_transforms, path='data/fer', emotions=emotions)
+dataset = EmoRecDataset(transform=train_transforms, path='data/fer_v2', emotions=emotions)
 
 dataset_len = len(dataset)
 val_len = int(np.floor(val_split * dataset_len))
@@ -88,6 +94,8 @@ for epoch in range(n_epoch):
             model.eval()
 
         for i, (image, label) in enumerate(dataloader):
+            # cv2.imshow('name', image[0].detach().numpy().transpose(1, 2, 0))
+            # cv2.waitKey(0)
             image = image.to(device)
             label = label.to(device)
 
@@ -98,7 +106,6 @@ for epoch in range(n_epoch):
                 loss_value = loss(pred, label)
 
                 if phase == 'train':  # Train step
-                    #print('{0}/{1}'.format(i + 1, train_len))
                     loss_value.backward()
                     optim.step()
                     batch_train_loss += loss_value.item()

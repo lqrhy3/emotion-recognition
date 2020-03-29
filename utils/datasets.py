@@ -47,10 +47,8 @@ class DetectionDataset(Dataset):
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
-            # img, face_rect = sample['image'], utils.xyxy2xywh(sample['bboxes'][0])
             img, face_rect = sample['image'], sample['bboxes'][0]
 
-        # target = utils.to_yolo_target(face_rect, img.shape[0], self.S, self.B)
         target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
         img = transforms.ImageToTensor()(img)
 
@@ -92,7 +90,8 @@ class EmoRecDataset(folder.DatasetFolder):
 def pil_loader(path):
     with open(path, 'rb') as f:
         img = Image.open(f)
-        if img.mode == 'L':
-            return img.convert('L')
-        else:
-            return img.convert('RGB')
+        return img.convert('L')
+        # if img.mode == 'L':
+        #     pass
+        # else:
+        #     return img.convert('RGB')
