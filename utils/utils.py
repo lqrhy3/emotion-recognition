@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import os
 from itertools import product
 
 
@@ -154,3 +155,13 @@ def compute_iou(bbox_1, bbox_2, num_bboxes):
     iou = intersection / union
 
     return iou
+
+
+def get_size_model(model):
+    """"Compute the size of the model
+    Returns:
+        (float) size of the model in MB"""
+    torch.save(model, "temp.pt")
+    size = os.path.getsize("temp.pt") / 1e6
+    os.remove("temp.pt")
+    return size

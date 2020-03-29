@@ -19,7 +19,7 @@ TASK = 'emorec'
 TEST = False
 PATH_TO_LOG = 'log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
-COMMENT = 'MiniXception FER'
+COMMENT = 'MiniXception quantization test'
 
 # Declaring hyperparameters
 n_epoch = 131

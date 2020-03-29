@@ -84,7 +84,7 @@ class MiniXceptionBlock(nn.Module):
 
     def forward(self, x):
         return self.skip_add.add(self.res_conv(x), self.block(x))
-
+        # return self.res_conv(x) + self.block(x)
 
 class DepthwiseSeparableConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, padding=1):

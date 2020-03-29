@@ -11,7 +11,7 @@ import time
 
 
 # Initialising detection model
-PATH_TO_MODEL = 'checkpoint.pt'
+PATH_TO_MODEL = 'log/detection/20.03.26_17-52'
 
 # model = TinyYolo(grid_size=5, num_bboxes=2, n_classes=1)
 # model = FacedModel(grid_size=5, num_bboxes=2, n_classes=1)
