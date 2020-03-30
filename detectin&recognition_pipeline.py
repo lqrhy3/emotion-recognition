@@ -4,7 +4,7 @@ import torch
 import numpy as np
 import os
 from utils.utils import xywh2xyxy, from_yolo_target
-from data.detection.show_targets import show_rectangles
+from utils.show_targets import show_rectangles
 import time
 from torchvision.transforms import ToTensor
 
@@ -25,7 +25,7 @@ def bbox_resize(coords, from_shape, to_shape):
 
 # Declaring paths to models and hyperparameters
 PATH_TO_DETECTION_MODEL = 'log\\detection\\20.03.26_02-14'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.03.29_13-31'
+PATH_TO_RECOGNITION_MODEL = 'log\\classification\\20.03.30_01-08'
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 DETECTION_SHAPE = (320, 320)
 EMOREC_SHAPE = (64, 64)

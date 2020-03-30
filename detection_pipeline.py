@@ -1,12 +1,10 @@
 import cv2
 from utils.transforms import ImageToTensor
 import torch
-from models.tiny_yolo_model import TinyYolo
-from models.faced_model import FacedModel
 import numpy as np
 import os
 from utils.utils import xywh2xyxy, from_yolo_target
-from data.detection.show_targets import show_rectangles
+from utils.show_targets import show_rectangles
 import time
 
 

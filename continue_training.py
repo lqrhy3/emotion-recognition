@@ -1,14 +1,11 @@
 import torch
-from models.faced_model import FacedModel
 from utils.logger import Logger
 from utils.datasets import DetectionDataset
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import albumentations
 from utils.loss import Loss, LossCounter
-from collections import Counter
 from utils.utils import from_yolo_target, xywh2xyxy, compute_iou
 import os
-import datetime
 import numpy as np
 
 

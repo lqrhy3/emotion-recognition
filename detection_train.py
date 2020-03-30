@@ -3,8 +3,7 @@ import datetime
 import numpy as np
 import os
 import torch
-from models.faced_model import FacedModel
-from models.tiny_yolo_model import TinyYolo
+from models.detection.faced_model import FacedModel
 
 from torch.utils.data import DataLoader, SubsetRandomSampler
 from utils.datasets import DetectionDataset

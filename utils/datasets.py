@@ -17,10 +17,10 @@ class DetectionDataset(Dataset):
     """
     dir_ = os.path.dirname(__file__)
 
-    def __init__(self, grid_size, num_bboxes, path='../data/detection/', transform=None):
-        self.datadir = os.path.join(self.dir_, path, 'train_images_v2')
+    def __init__(self, grid_size, num_bboxes, path='data/detection/train_images', transform=None):
+        self.datadir = os.path.join(self.dir_, '..', path)
         self.img_names = np.array(os.listdir(self.datadir))
-        self.markup_dir = os.path.join(self.dir_, path, 'data_markup_v2.txt')
+        self.markup_dir = os.path.join(self.dir_, path, 'train_markup.txt')
         self.transform = transform
 
         self.S = grid_size
@@ -61,7 +61,7 @@ class DetectionDataset(Dataset):
 class EmoRecDataset(folder.DatasetFolder):
     dir_ = os.path.dirname(__file__)
 
-    def __init__(self, path='data/recognition', emotions=None, transform=None):
+    def __init__(self, path='data/classification/train_images', emotions=None, transform=None):
         """
         :param emotions:
         List of emotions to use (should be name of foler)

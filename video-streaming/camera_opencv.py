@@ -7,7 +7,7 @@ import rootpath
 
 
 PATH_TO_DETECTION_MODEL = 'log\\detection\\20.01.13_12-53'
-PATH_TO_RECOGNITION_MODEL = 'log\\emorec\\20.01.25_03-16'
+PATH_TO_RECOGNITION_MODEL = 'log\\classification\\20.01.25_03-16'
 PATH_TO_DETECTION_MODEL = os.path.join(rootpath.detect(), PATH_TO_DETECTION_MODEL)
 PATH_TO_RECOGNITION_MODEL = os.path.join(rootpath.detect(), PATH_TO_RECOGNITION_MODEL)
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
