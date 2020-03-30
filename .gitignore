@@ -11,4 +11,7 @@ tesst.py
 log/
 data/fer/fer2013.csv
 hgit.ipynb/
+data/parsing_stuff/metadata.txt
+data/parsing_stuff/metadata_original.txt
+data/parsing_stuff/wider_face_train.mat
 

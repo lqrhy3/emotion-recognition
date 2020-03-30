@@ -1,9 +1,8 @@
 import torch
 from torch import nn
-import torchvision.models
 
 
-__all__ = ['MiniXception', 'ConvNet', 'PretrConvNet']
+__all__ = ['MiniXception']
 
 
 class MiniXception(nn.Module):
@@ -96,11 +95,3 @@ class DepthwiseSeparableConv(nn.Module):
         x = self.depthwise(x)
         x = self.pointwise(x)
         return x
-
-
-
-if __name__ == '__main__':
-    model = MiniXception(['', '', ''])
-    #print(*list(model.blocks.children()), sep='\n-------------------------------------\n')
-    model.fuse_model()
-    print(model)
