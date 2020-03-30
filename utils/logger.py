@@ -10,7 +10,7 @@ class Logger:
         self.level = logging.INFO
         self.logger = logging.getLogger(name)
         self.logger.setLevel(self.level)
-        self.path_to_log = os.path.join('log', task, session_id, name + '.log')
+        self.path_to_log = os.path.join('..', 'log', task, session_id, name + '.log')
 
         # Logger configuration
         self.formatter = logging.Formatter(self.format)

@@ -55,9 +55,13 @@ class TinyYolo(nn.Module):
         self.fc = nn.Linear(in_features=256*self.S*self.S, out_features=self.S*self.S*(5*self.B + self.C))
         self.sigmoid = nn.Sigmoid()
 
+        self.quant = torch.quantizatiuon.QuantStub()
+        self.dequant = torch.quantizatiuon.DeQuantStub()
+
     def forward(self, x):
         # Declaring forward pass of detection_model
-        x = x.float()   
+        x = x.float()
+        x = self.quant(x)
         x = self.layer1(x)
         x = self.layer2(x)
         x = self.layer3(x)
@@ -72,6 +76,7 @@ class TinyYolo(nn.Module):
 
         # Transfroming to YOLO output tensor
         x = x.view(-1, 5 * self.B + self.C, self.S, self.S)
+        x = self.dequant(x)
         return x
 
     def fuse_model(self):
