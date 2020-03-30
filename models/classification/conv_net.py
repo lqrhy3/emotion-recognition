@@ -89,12 +89,3 @@ class PretrConvNet(nn.Module):
     def forward(self, x):
         x = self.backbone(x)
         return x
-
-
-if __name__ == '__main__':
-    model = ConvNet([''])
-    model.fuse_model()
-    model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
-    torch.quantization.prepare(model, inplace=True)
-    torch.quantization.convert(model, inplace=True)
-    print(model)

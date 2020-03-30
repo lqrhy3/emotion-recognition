@@ -78,12 +78,3 @@ class TinyYolo(nn.Module):
         for m in self.children():
             if isinstance(m, ConvBlock):
                 torch.quantization.fuse_modules(m.layer, [['0', '1', '2']], inplace=True)
-
-
-if __name__ == '__main__':
-    model = TinyYolo(grid_size=5, num_bboxes=2)
-    model.fuse_model()
-    model.qconfig = torch.quantization.get_default_qat_qconfig('fbgemm')
-    torch.quantization.prepare(model, inplace=True)
-    torch.quantization.convert(model, inplace=True)
-    print(model)
