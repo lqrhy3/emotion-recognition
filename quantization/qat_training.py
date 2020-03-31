@@ -4,17 +4,17 @@ import torch
 from torch.utils.data import DataLoader
 from utils.datasets import DetectionDataset
 from utils.loss import Loss
-
+import cv2
 
 # Quantization aware training
 PATH_TO_DATA = 'data/detection/callibration_images'
-PATH_TO_MODEL = 'log/detection/20.03.26_17-52/model.pt'
-PATH_TO_STATE_DICT = 'log/detection/20.03.26_17-52/checkpoint.pt'
+PATH_TO_MODEL = 'log/detection/20.03.31_11-56/model.pt'
+PATH_TO_STATE_DICT = 'log/detection/20.03.31_11-56/checkpoint.pt'
 
 ENGINE = 'fbgemm'
 IMAGE_SIZE = (288, 288)
 NUM_BATCHES = 10
-BATCH_SIZE = 26
+BATCH_SIZE = 6
 NUM_EPOCHS = 10
 GRID_SIZE = 9
 SAVE_TYPE = 'trace'
@@ -26,13 +26,13 @@ train_transform = albumentations.Compose([
 
 ], bbox_params=albumentations.BboxParams(format='pascal_voc', label_fields=['labels']))
 
-dataset = DetectionDataset(transform=train_transform, grid_size=9, num_bboxes=2)
+dataset = DetectionDataset(transform=train_transform, grid_size=9, num_bboxes=2, path=PATH_TO_DATA)
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 model = torch.load(os.path.join('..', PATH_TO_MODEL), map_location='cpu')
 load = torch.load(os.path.join('..', PATH_TO_STATE_DICT), map_location='cpu')
 model.load_state_dict(load['model_state_dict'])
-model.load_state_dict(load)
+
 
 model.fuse_model()
 model.qconfig = torch.quantization.get_default_qat_qconfig(ENGINE)
@@ -48,12 +48,16 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gam
 
 
 for epoch in range(NUM_EPOCHS):
+    print("Epochs:", epoch)
+    i = 0
     for image, target, _ in dataloader:
+        print("IMage", i)
+        i += 1
         optimizer.zero_grad()
 
         output = model(image)
 
-        loss_value = loss(output, target)
+        loss_value, _ = loss(output, target)
         loss_value.backward()
         optimizer.step()
         scheduler.step(epoch)
@@ -69,9 +73,8 @@ model.eval()
 torch.quantization.convert(model, inplace=True)
 
 if SAVE_TYPE == 'trace':
-    torch.jit.save(torch.jit.trace(model),
-                   torch.ones((BATCH_SIZE, 3, *IMAGE_SIZE)),
-                   os.path.join(PATH_TO_MODEL, PATH_TO_MODEL.split('/')[-1][:-3] + 'quantized.pt'))
+    torch.jit.save(torch.jit.trace(model, torch.ones((BATCH_SIZE, 3, *IMAGE_SIZE))),
+                   os.path.join('..', PATH_TO_MODEL[:-8], PATH_TO_MODEL.split('/')[-1][:-3] + '_quantized.pt'))
 elif SAVE_TYPE == 'script':
     torch.jit.save(torch.jit.script(model),
-                   os.path.join(PATH_TO_MODEL, PATH_TO_MODEL.split('/')[-1][:-3] + 'quantized.pt'))
+                   os.path.join('..', PATH_TO_MODEL[:-8], PATH_TO_MODEL.split('/')[-1][:-3] + '_quantized.pt'))
