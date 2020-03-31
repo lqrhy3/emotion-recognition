@@ -3,7 +3,7 @@ from utils.transforms import ImageToTensor
 import torch
 import numpy as np
 import os
-from utils.utils import xywh2xyxy, from_yolo_target
+from utils.utils import xywh2xyxy, from_yolo_target, bbox_resize
 from utils.show_targets import show_rectangles
 import time
 from torchvision.transforms import ToTensor

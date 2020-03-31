@@ -47,8 +47,11 @@ class DetectionDataset(Dataset):
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
-            img, face_rect = sample['image'], sample['bboxes'][0]
-
+            try:
+                img, face_rect = sample['image'], sample['bboxes'][0]
+            except IndexError:
+                print('!!!!!!!!!!ERROR!!!!!!!!!', sample['bboxes'], face_rect)
+                return torch.zeros((3, img.shape[0], img.shape[1])), torch.zeros((5 * self.B + 1, self.S, self.S)), torch.zeros_like(face_rect)
         target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
 
         img = transforms.ImageToTensor()(img)
