@@ -17,10 +17,10 @@ class DetectionDataset(Dataset):
     """
     dir_ = os.path.dirname(__file__)
 
-    def __init__(self, grid_size, num_bboxes, path='data/detection/train_images', transform=None):
-        self.datadir = os.path.join(self.dir_, '..', path)
+    def __init__(self, grid_size, num_bboxes, path='data/detection', transform=None):
+        self.datadir = os.path.join(self.dir_, '..', path, 'train_images')
         self.img_names = np.array(os.listdir(self.datadir))
-        self.markup_dir = os.path.join(self.dir_, path, 'train_markup.txt')
+        self.markup_dir = os.path.join(self.dir_, '..', path, 'train_markup.txt')
         self.transform = transform
 
         self.S = grid_size
@@ -47,12 +47,18 @@ class DetectionDataset(Dataset):
 
         if self.transform:
             sample = self.transform(image=img, bboxes=[utils.xywh2xyxy(face_rect)], labels=['face'])
-            img, face_rect = sample['image'], sample['bboxes'][0]
-
+            try:
+                img, face_rect = sample['image'], sample['bboxes'][0]
+            except IndexError:
+                print('!!!!!!!!!!ERROR!!!!!!!!!', sample['bboxes'], face_rect)
+                return torch.zeros((3, img.shape[0], img.shape[1])), torch.zeros((5 * self.B + 1, self.S, self.S)), torch.zeros_like(face_rect)
         target = utils.to_yolo_target(utils.xyxy2xywh(face_rect), img.shape[0], self.S, self.B)
-        img = transforms.ImageToTensor()(img)
 
-        return img, target, torch.tensor(face_rect, dtype=torch.float)
+        img = transforms.ImageToTensor()(img)
+        target = torch.tensor(target, dtype=torch.float)
+        face_rect = torch.tensor(face_rect, dtype=torch.float)
+
+        return img, target, face_rect
 
     def __len__(self):
         return len(self.img_names)

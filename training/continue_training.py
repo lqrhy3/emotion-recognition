@@ -28,7 +28,7 @@ model = torch.load(os.path.join(PATH_TO_TRAIN_DIR, 'model.pt'))
 model.load_state_dict(load['model_state_dict'])
 
 # Initiating optimizer and scheduler for training steps
-# optim = torch.optim.SGD(detection_model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
+# optimizer = torch.optimizer.SGD(detection_model.parameters(), lr=0.0001, momentum=0.9, weight_decay=0.0005)
 optim = torch.optim.Adam(model.parameters())
 optim.load_state_dict(load['optim_state_dict'])
 

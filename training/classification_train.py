@@ -1,28 +1,28 @@
-from models.classification.mini_xception import *
-import numpy as np
 import datetime
 import os
-from utils.logger import Logger
-from utils.datasets import EmoRecDataset
+import numpy as np
+import torch
+from torch.nn import CrossEntropyLoss
 from torchvision import transforms
 from torch.utils.data import DataLoader, SubsetRandomSampler
-from torch.nn import CrossEntropyLoss
-import torch
-import warnings
+from models.classification.mini_xception import *
+from utils.logger import Logger
+from utils.datasets import EmoRecDataset
 from utils.transforms import GaussNoise
+import warnings
 
 warnings.filterwarnings('ignore')
 # Declaring constants for logging and creating dir for current experiment. Initiating logger.
 TASK = 'classification'
 TEST = False
-PATH_TO_LOG = 'log/' + TASK
+PATH_TO_LOG = '../log/' + TASK
 SESSION_ID = datetime.datetime.now().strftime('%y.%m.%d_%H-%M')
 COMMENT = 'enlarged dataset'
 
 # Declaring hyperparameters
 n_epoch = 211
 batch_size = 63
-val_split = 0.03
+val_split = 0.05
 lr = 0.0001
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 
@@ -37,10 +37,8 @@ train_transforms = transforms.Compose([
 ])
 
 
-
-
 # Initialising dataset and dataloaders for train/validation stages
-dataset = EmoRecDataset(transform=train_transforms, path='data/classification', emotions=emotions)
+dataset = EmoRecDataset(transform=train_transforms, path='data/classification/train_images', emotions=emotions)
 
 dataset_len = len(dataset)
 val_len = int(np.floor(val_split * dataset_len))
@@ -68,7 +66,7 @@ if not TEST:
     os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)
     logger = Logger(COMMENT, task=TASK, session_id=SESSION_ID)
 
-    hyperparameters = {'n_epoch': n_epoch, 'batch_size': batch_size, 'emotions': emotions}
+    hyperparameters = {'num_epochs': n_epoch, 'batch_size': batch_size, 'emotions': emotions}
     logger.start_info(hyperparameters=hyperparameters, optim=optim, transforms=train_transforms, comment=COMMENT)
 
 

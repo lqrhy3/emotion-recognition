@@ -7,8 +7,8 @@ import sys
 import time
 import torch
 from fpdf import FPDF
-from utils.summary import summary
-from utils.transforms import ImageToTensor
+from summary import summary
+from transforms import ImageToTensor
 
 
 def get_inference_time(model, pth_to_data, input_shape):
@@ -152,11 +152,11 @@ def find_last_dir():
     """:return last_dirname: path to last-edited directory in folder 'log' """
     last_mod_time = 0
     last_dirname = ''
-    folders = os.listdir('log/')
+    folders = os.listdir('../log/')
     for folder in folders:
-        subfolders = os.listdir(os.path.join('log/', folder))
+        subfolders = os.listdir(os.path.join('../log/', folder))
         for subfolder in subfolders:
-            folder_name = os.path.join('log/', folder, subfolder)
+            folder_name = os.path.join('../log/', folder, subfolder)
             mod_time = os.path.getmtime(folder_name)
             if mod_time > last_mod_time:
                 last_dirname = folder_name

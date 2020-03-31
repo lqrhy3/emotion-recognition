@@ -3,29 +3,15 @@ from utils.transforms import ImageToTensor
 import torch
 import numpy as np
 import os
-from utils.utils import xywh2xyxy, from_yolo_target
+from utils.utils import xywh2xyxy, from_yolo_target, bbox_resize
 from utils.show_targets import show_rectangles
 import time
 from torchvision.transforms import ToTensor
 
 
-def bbox_resize(coords, from_shape, to_shape):
-    """Resize bounding box coordinates correspondingly to to_shape
-    :param coords: numpy array. bounding box coordinates
-    :param from_shape: tuple. current image shape
-    :param to_shape: tuple. new image shape
-    """
-    new_coords = list()
-    new_coords.append(int(coords[0] * (to_shape[0] / from_shape[0])))
-    new_coords.append(int(coords[1] * (to_shape[1] / from_shape[1])))
-    new_coords.append(int(coords[2] * (to_shape[0] / from_shape[0])))
-    new_coords.append(int(coords[3] * (to_shape[1] / from_shape[1])))
-    return new_coords
-
-
 # Declaring paths to models and hyperparameters
-PATH_TO_DETECTION_MODEL = 'log\\detection\\20.03.26_02-14'
-PATH_TO_RECOGNITION_MODEL = 'log\\classification\\20.03.30_01-08'
+PATH_TO_DETECTION_MODEL = '../log/detection/20.03.26_02-14'
+PATH_TO_RECOGNITION_MODEL = '../log/classification/20.03.30_20-13'
 emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
 DETECTION_SHAPE = (320, 320)
 EMOREC_SHAPE = (64, 64)
