@@ -9,7 +9,7 @@ class MiniXception(nn.Module):
     """MiniXception classification model.
         Constructing MiniXception network supporting number of classes and number of input channels.
         """
-    def __init__(self, emotion_map, in_channels=1):
+    def __init__(self, emotion_map, in_channels=3):
         """:param emotion_map: emotion type list
            :param in_channels [optional]: number of input channels"""
         super(MiniXception, self).__init__()
