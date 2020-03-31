@@ -19,10 +19,8 @@ class DetectionDataset(Dataset):
 
     def __init__(self, grid_size, num_bboxes, path='data/detection/train_images', transform=None):
         self.datadir = os.path.join(self.dir_, '..', path)
-        print(self.datadir)
-        self.img_names = np.array([i for i in os.listdir(self.datadir) if not i.startswith('.')])
+        self.img_names = np.array(os.listdir(self.datadir))
         self.markup_dir = os.path.join(self.dir_, '..', path[:-6] + 'markup.txt')
-        print(self.markup_dir)
         self.transform = transform
 
         self.S = grid_size
