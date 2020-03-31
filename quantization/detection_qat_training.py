@@ -4,7 +4,6 @@ import torch
 from torch.utils.data import DataLoader
 from utils.datasets import DetectionDataset
 from utils.loss import Loss
-import cv2
 
 # Quantization aware training
 PATH_TO_DATA = 'data/detection/callibration_images'
@@ -33,7 +32,6 @@ model = torch.load(os.path.join('..', PATH_TO_MODEL), map_location='cpu')
 load = torch.load(os.path.join('..', PATH_TO_STATE_DICT), map_location='cpu')
 model.load_state_dict(load['model_state_dict'])
 
-
 model.fuse_model()
 model.qconfig = torch.quantization.get_default_qat_qconfig(ENGINE)
 torch.quantization.prepare_qat(model, inplace=True)
@@ -49,10 +47,7 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gam
 
 for epoch in range(NUM_EPOCHS):
     print("Epochs:", epoch)
-    i = 0
     for image, target, _ in dataloader:
-        print("IMage", i)
-        i += 1
         optimizer.zero_grad()
 
         output = model(image)
