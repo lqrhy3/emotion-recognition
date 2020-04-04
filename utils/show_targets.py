@@ -16,10 +16,10 @@ def show_target_images(images_path='train_images/',
         name = image_name[:-4]
         points = np.array(xywh2xyxy(markup[name]))
         img = cv2.imread(images_path + image_name)
-        show_rectangles(img, np.array([points]), name=name, color=color, thickness=thickness)
+        draw_rectangles(img, np.array([points]), name=name, color=color, thickness=thickness)
 
 
-def show_rectangles(image, rectangles, emotions='', name='image', color=(0, 255, 0), thickness=2):
+def draw_rectangles(image, rectangles, emotions='', name='image', color=(0, 255, 0), thickness=2):
     img = image
     if not emotions:
         emotions = [''] * rectangles.shape[0]

@@ -16,7 +16,6 @@ def get_subframe_coords(frame_w, frame_h, subframe_w, subframe_h):
     return x_l, y_t, x_r, y_b
 
 
-
 def run_eval():
     model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'))
     load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'))
@@ -86,6 +85,6 @@ if __name__ == '__main__':
     PATH_TO_MODEL = os.path.join('..', opt.path_to_model)
     DEVICE = 'cpu'
     IMAGE_SIZE = (opt.image_size, opt.image_size)
-    EMOTION_MAP = opt.emtions.split()
+    EMOTION_MAP = opt.emotions.split()
 
     run_eval()
