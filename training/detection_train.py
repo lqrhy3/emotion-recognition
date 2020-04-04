@@ -132,18 +132,18 @@ def run_train():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Script to train detection model',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--num_epochs', type=int, default=150, help='number of train epochs')
+    parser.add_argument('--num_epochs', type=int, default=125, help='number of train epochs')
     parser.add_argument('--batch_size', type=int, default=26, help='size of image batch')
     parser.add_argument('--lr', type=float, default=0.0001, help='learning rate')
     parser.add_argument('--grid_size', type=int, default=9, help='grid size')
     parser.add_argument('--num_bboxes', type=int, default=2, help='number of bboxes')
-    parser.add_argument('--val_split', type=float, default=0.03, help='validation split')
+    parser.add_argument('--val_split', type=float, default=0.02, help='validation split')
     parser.add_argument('--path_to_log', type=str, default='log',
                         help='path to log folder.\nlog, model pickle and checkpiont will be accessible in '
                              '"~/<path_to_log>/detection/<session_id>"')
     parser.add_argument('--model', type=str, default='FacedModelLite',
                         choices=['FacedModelLite', 'FacedModel', 'TinyYolo'])
-    parser.add_argument('--path_to_data', type=str, default='data/detection',
+    parser.add_argument('--path_to_data', type=str, default='data/detection/train_images',
                         help='path to folder with data\nfolder with images and markup(txt file) must be accessible in '
                              '"~/<path_to_data>/[train_images|train_markup.txt]"')
 
@@ -162,8 +162,8 @@ if __name__ == '__main__':
     num_epochs = opt.num_epochs
     batch_size = opt.batch_size
     grid_size = opt.grid_size
-    image_size_dict = {'FacedModelLite': 5, 'FacedModel': 6, 'TinyYolo': 6}
-    image_size = grid_size * 2**image_size_dict[opt.model]
+    model_stride_dict = {'FacedModelLite': 5, 'FacedModel': 6, 'TinyYolo': 6}
+    image_size = grid_size * 2 ** model_stride_dict[opt.model]
     image_size = (image_size, image_size)
     num_bboxes = opt.num_bboxes
     val_split = opt.val_split
