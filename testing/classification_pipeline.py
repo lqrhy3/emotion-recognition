@@ -6,6 +6,7 @@ import numpy as np
 import os
 import time
 
+
 def get_subframe_coords(frame_w, frame_h, subframe_w, subframe_h):
     x_l = frame_w // 2 - subframe_w // 2
     y_t = frame_h // 2 - subframe_h // 2
@@ -23,6 +24,7 @@ def run_eval():
     model.to(DEVICE).eval()
 
     cap = cv2.VideoCapture(0)
+
     while cap.isOpened():  # Capturing video
         ret, frame = cap.read()
         start = time.time()
