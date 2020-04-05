@@ -46,13 +46,16 @@ def run_train():
     train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=train_sampler)
     val_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, sampler=val_sampler)
 
+    train_len = len(train_dataloader)
+
     loss = CrossEntropyLoss(reduction='mean')
 
     # Initiating model and device (cuda/cpu)
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = net(emotion_map=emotions, in_channels=dataset.img_channels).to(device)
+    model = net(emotion_map=emotions).to(device)
 
     optim = torch.optim.Adam(model.parameters(), lr=lr)
+
 
     if not TEST:
         os.makedirs(os.path.join(PATH_TO_LOG, SESSION_ID), exist_ok=True)

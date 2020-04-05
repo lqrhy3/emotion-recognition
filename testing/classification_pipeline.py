@@ -17,9 +17,10 @@ def get_subframe_coords(frame_w, frame_h, subframe_w, subframe_h):
 
 
 def run_eval():
-    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'))
-    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'))
+    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'), map_location='cpu')
+    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
     model.load_state_dict(load['model_state_dict'])
+    # model = torch.jit.load(os.path.join(PATH_TO_MODEL, 'model_quantized.pt'))
     model.to(DEVICE).eval()
 
     cap = cv2.VideoCapture(0)
@@ -43,9 +44,9 @@ def run_eval():
                               thickness=2)
         frame = cv2.putText(frame,
                             "PLACE YOUR FACE IN THE BOX",
-                            (subframe_coords[0], subframe_coords[3] + 15),
+                            (subframe_coords[0] - 325, subframe_coords[3] + 200),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            0.7,
+                            2,
                             color=(255, 0, 0),
                             thickness=3)
 
@@ -54,22 +55,24 @@ def run_eval():
 
         frame = cv2.putText(frame,
                             pred_emo,
-                            (subframe_coords[0], subframe_coords[1] + 10),
+                            (subframe_coords[0] - 20, subframe_coords[1] - 30),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            0.5,
+                            4,
                             color=(0, 255, 0),
-                            thickness=2)
+                            thickness=3)
 
+        fps = 1. / (time.time() - start)
         # cv2.imshow('classification pipeline', cl_image[0, 0, ...].detach().numpy())
         cv2.imshow('classification pipeline', frame)
 
-        fps = 1. / (time.time() - start)
         print(fps)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
 
 
 if __name__ == '__main__':

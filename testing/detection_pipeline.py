@@ -16,13 +16,12 @@ import time
 
 
 def run_eval():
-    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'))
-    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'))
+    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'), map_location='cpu')
+    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
     model.load_state_dict(load['model_state_dict'])
+    # model = torch.jit.load(os.path.join(PATH_TO_MODEL, 'model_quantized.pt'))
     model.to('cpu').eval()
-
     cap = cv2.VideoCapture(0)
-
     while cap.isOpened():  # Capturing video
         ret, image = cap.read()
         orig_shape = image.shape[:2]
@@ -40,9 +39,7 @@ def run_eval():
         draw_rectangles(image,
                         np.expand_dims(np.array(bbox_resize(xywh2xyxy(pred_output[:, :4]), DETECTION_SIZE, orig_shape[::-1])), axis=0),
                         str(pred_output[:, 4]))  # Painting bbox
-
         fps = 1. / (time.time() - start)
-        print(fps)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
