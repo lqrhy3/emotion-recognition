@@ -6,7 +6,6 @@ import numpy as np
 import os
 import time
 
-
 def get_subframe_coords(frame_w, frame_h, subframe_w, subframe_h):
     x_l = frame_w // 2 - subframe_w // 2
     y_t = frame_h // 2 - subframe_h // 2
@@ -17,13 +16,13 @@ def get_subframe_coords(frame_w, frame_h, subframe_w, subframe_h):
 
 
 def run_eval():
-    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'))
-    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'))
+    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'), map_location='cpu')
+    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
     model.load_state_dict(load['model_state_dict'])
+    # model = torch.jit.load(os.path.join(PATH_TO_MODEL, 'model_quantized.pt'))
     model.to(DEVICE).eval()
 
     cap = cv2.VideoCapture(0)
-
     while cap.isOpened():  # Capturing video
         ret, frame = cap.read()
         start = time.time()
@@ -60,16 +59,18 @@ def run_eval():
                             color=(0, 255, 0),
                             thickness=2)
 
+        fps = 1. / (time.time() - start)
         # cv2.imshow('classification pipeline', cl_image[0, 0, ...].detach().numpy())
         cv2.imshow('classification pipeline', frame)
 
-        fps = 1. / (time.time() - start)
         print(fps)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
+
+
 
 
 if __name__ == '__main__':

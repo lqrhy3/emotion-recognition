@@ -50,3 +50,5 @@ if SAVE_TYPE == 'trace':
 elif SAVE_TYPE == 'script':
     torch.jit.save(torch.jit.script(model),
                    os.path.join('..', PATH_TO_MODEL[:-8], PATH_TO_MODEL.split('/')[-1][:-3] + '_quantized.pt'))
+
+

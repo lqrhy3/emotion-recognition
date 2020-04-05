@@ -18,24 +18,24 @@ from torchvision.transforms import ToTensor
 
 def run_eval():
     # Initialising models weights
-    detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'))
-    detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'))
+    detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'), map_location='cpu')
+    detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'), map_location='cpu')
     detection_model.load_state_dict(detection_load['model_state_dict'])
+    # detection_model = torch.jit.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model_quantized.pt'))
 
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     detection_model.to(device)
     detection_model.eval()
-
-    recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model.pt'))
-    recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'))
+    #
+    recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model.pt'), map_location='cpu')
+    recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'), map_location='cpu')
     recognition_model.load_state_dict(recognition_load['model_state_dict'])
-
+    # recognition_model = torch.jit.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model_quantized.pt'))
     recognition_model.to(device)
     recognition_model.eval()
 
     cap = cv2.VideoCapture(0)
-
     # Start video capturing
     while cap.isOpened():
         ret, image = cap.read()  # original image
@@ -94,6 +94,7 @@ def run_eval():
 
     cap.release()
     cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
