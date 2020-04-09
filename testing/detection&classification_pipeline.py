@@ -22,16 +22,14 @@ def run_eval():
     detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'))
     detection_model.load_state_dict(detection_load['model_state_dict'])
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-    detection_model.to(device)
+    detection_model.to(DEVICE)
     detection_model.eval()
 
     classification_model = torch.load(os.path.join(PATH_TO_CLASSIFICATION_MODEL, 'model.pt'))
     classification_load = torch.load(os.path.join(PATH_TO_CLASSIFICATION_MODEL, 'checkpoint.pt'))
     classification_model.load_state_dict(classification_load['model_state_dict'])
 
-    classification_model.to(device)
+    classification_model.to(DEVICE)
     classification_model.eval()
 
     cap = cv2.VideoCapture(0)
@@ -43,7 +41,7 @@ def run_eval():
         start = time.time()
         with torch.no_grad():
             detection_image = cv2.resize(image, DETECTION_SIZE)           # converting image to format and shape,
-            detection_image = ImageToTensor()(detection_image).to(device)  # required by detection model
+            detection_image = ImageToTensor()(detection_image).to(DEVICE)  # required by detection model
             detection_image = detection_image.unsqueeze(0)
             output = detection_model(detection_image)
 
@@ -51,7 +49,7 @@ def run_eval():
             listed_output = from_yolo_target(output[:, :10, :, :], detection_image.size(2), grid_size=GRID_SIZE, num_bboxes=NUM_BBOXES)
             pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]
             pred_xyxy = xywh2xyxy(pred_output[:, :4])  # predicted bbox coordinates
-
+            print(pred_output[:, 4].item())
             if pred_output[:, 4].item() > DETECTION_THRESHOLD:  # prediction confidence threshold
 
                 bbox_l_y = int((pred_xyxy[1]) * (orig_shape[0] / DETECTION_SIZE[1]))  # Transform bbox coords
@@ -76,7 +74,7 @@ def run_eval():
 
                 face_image = cv2.resize(face_image, CLASSIFICATION_SIZE, CLASSIFICATION_SIZE)
                 face_image = cv2.cvtColor(face_image, cv2.COLOR_BGR2GRAY)
-                face_image = ToTensor()(face_image).unsqueeze(0).to(device)
+                face_image = ToTensor()(face_image).unsqueeze(0).to(DEVICE)
 
                 pred_emo = classification_model(face_image).argmax(dim=1).item()
 
@@ -86,7 +84,7 @@ def run_eval():
                                 [EMOTIONS_LIST[pred_emo]],
                                 name='detection and classification pipeline')
             else:
-                cv2.imshow('detectiona and classification pipeline', image)
+                cv2.imshow('detection and classification pipeline', image)
             fps = 1. / (time.time() - start)  # Count fps
             print(fps)
 
@@ -108,19 +106,22 @@ if __name__ == '__main__':
     parser.add_argument('--num_bboxes', type=int, default=2, help='number of bboxes')
     parser.add_argument('--detection_shape', type=int, default=288, help='detection image size')
     parser.add_argument('--classification_shape', type=int, default=64, help='classification image size')
-    parser.add_argument('--detection_threshold', type=float, default=0.4, help='detection threshold')
+    parser.add_argument('--detection_threshold', type=float, default=0.3, help='detection threshold')
     parser.add_argument('--emotions', type=str, default='Anger Happy Neutral Surprise',
                         help='emotions list which model has trained on (space separated)\n')
+    parser.add_argument('--device', type=str, default='cpu',
+                        choices=['cpu', 'cuda:0'])
     opt = parser.parse_args()
 
     # Declaring paths to models and hyperparameters
     PATH_TO_DETECTION_MODEL = os.path.join('..', opt.path_to_detection_model)
-    PATH_TO_CLASSIFICATION_MODEL = os.path.join('..', opt.path_to_recognition_model)
+    PATH_TO_CLASSIFICATION_MODEL = os.path.join('..', opt.path_to_classification_model)
     GRID_SIZE = opt.grid_size
     NUM_BBOXES = opt.num_bboxes
     EMOTIONS_LIST = opt.emotions.split()
     DETECTION_SIZE = (opt.detection_shape, opt.detection_shape)
-    CLASSIFICATION_SIZE = (opt.recognition_shape, opt.recognition_shape)
+    CLASSIFICATION_SIZE = (opt.classification_shape, opt.classification_shape)
     DETECTION_THRESHOLD = opt.detection_threshold
+    DEVICE = opt.device
 
     run_eval()

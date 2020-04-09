@@ -78,6 +78,8 @@ if __name__ == '__main__':
     parser.add_argument('--image_size', type=int, default=64, help='image size')
     parser.add_argument('--emotions', type=str, default='Anger Happy Neutral Surprise',
                         help='emotions list which model has trained on (space separated)\n')
+    parser.add_argument('--device', type=str, default='cpu',
+                        choices=['cpu', 'cuda:0'])
 
     opt = parser.parse_args()
     # Initialising detection model
@@ -85,5 +87,6 @@ if __name__ == '__main__':
     DEVICE = 'cpu'
     IMAGE_SIZE = (opt.image_size, opt.image_size)
     EMOTIONS_LIST = opt.emotions.split()
+    DEVICE = opt.device
 
     run_eval()

@@ -19,7 +19,8 @@ def run_eval():
     load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
     model.load_state_dict(load['model_state_dict'])
     # model = torch.jit.load(os.path.join(PATH_TO_MODEL, 'model_quantized.pt'))
-    model.to('cpu').eval()
+    model.to(DEVICE).eval()
+
     cap = cv2.VideoCapture(0)
     while cap.isOpened():  # Capturing video
         ret, image = cap.read()
@@ -29,7 +30,7 @@ def run_eval():
         with torch.no_grad():
             # Image preprocessing for format and shape required by model
             detection_image = cv2.resize(image, DETECTION_SIZE)
-            detection_image = ImageToTensor()(detection_image)
+            detection_image = ImageToTensor()(detection_image).to(DEVICE)
             detection_image = detection_image.unsqueeze(0)
             output = model(detection_image)  # Prediction
 
@@ -58,12 +59,16 @@ if __name__ == '__main__':
     parser.add_argument('--grid_size', type=int, default=9, help='grid size')
     parser.add_argument('--num_bboxes', type=int, default=2, help='number of bboxes')
     parser.add_argument('--image_size', type=int, default=288, help='image size')
+    parser.add_argument('--detection_threshold', type=float, default=0.3, help='detection threshold')
+    parser.add_argument('--device', type=str, default='cpu',
+                        choices=['cpu', 'cuda:0'])
     opt = parser.parse_args()
     # Initialising detection model
     PATH_TO_MODEL = os.path.join('..', opt.path_to_model)
-    DETECTION_SIZE = (opt.image_size, opt.image_size)
     GRID_SIZE = opt.grid_size
     NUM_BBOXES = opt.num_bboxes
-    DETECTION_THRESHOLD = 0.4
+    DETECTION_SIZE = (opt.image_size, opt.image_size)
+    DETECTION_THRESHOLD = opt.detection_threshold
+    DEVICE = opt.device
 
     run_eval()
