@@ -52,7 +52,7 @@ def run_eval():
             pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]
             pred_xyxy = xywh2xyxy(pred_output[:, :4])  # predicted bbox coordinates
 
-            if pred_output[:, 4][0] > DETECTION_THRESHOLD:  # prediction confidence threshold
+            if pred_output[:, 4].item() > DETECTION_THRESHOLD:  # prediction confidence threshold
 
                 bbox_l_y = int((pred_xyxy[1]) * (orig_shape[0] / DETECTION_SIZE[1]))  # Transform bbox coords
                 bbox_r_y = int((pred_xyxy[3]) * (orig_shape[0] / DETECTION_SIZE[1]))  # correspondingly to DETECTION_SHAPE -> orig_shape
@@ -83,9 +83,10 @@ def run_eval():
                 # Paint bbox and emotion prediction
                 draw_rectangles(image,
                                 np.expand_dims(np.array(bbox_resize(pred_xyxy, DETECTION_SIZE, orig_shape[::-1])), axis=0),
-                                [EMOTIONS_LIST[pred_emo]])
+                                [EMOTIONS_LIST[pred_emo]],
+                                name='detection and classification pipeline')
             else:
-                cv2.imshow('image', image)
+                cv2.imshow('detectiona and classification pipeline', image)
             fps = 1. / (time.time() - start)  # Count fps
             print(fps)
 

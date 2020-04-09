@@ -6,7 +6,6 @@ import sys
 module_path = os.path.abspath(os.getcwd() + '\\..')
 if module_path not in sys.path:
     sys.path.append(module_path)
-from torchvision.transforms import ToTensor
 import torch
 import numpy as np
 from utils.utils import xywh2xyxy, from_yolo_target, bbox_resize
@@ -27,19 +26,24 @@ def run_eval():
         orig_shape = image.shape[:2]
         start = time.time()
 
-        # Image preprocessing for format and shape required by model
-        detection_image = cv2.resize(image, DETECTION_SIZE)
-        print(ImageToTensor()(detection_image), ToTensor()(detection_image), sep='\n===============\n')
-        detection_image = ToTensor()(detection_image)
-        detection_image = detection_image.unsqueeze(0)
-        output = model(detection_image)  # Prediction
+        with torch.no_grad():
+            # Image preprocessing for format and shape required by model
+            detection_image = cv2.resize(image, DETECTION_SIZE)
+            detection_image = ImageToTensor()(detection_image)
+            detection_image = detection_image.unsqueeze(0)
+            output = model(detection_image)  # Prediction
 
-        listed_output = from_yolo_target(output[:, :10, :, :], detection_image.size(2), grid_size=GRID_SIZE, num_bboxes=NUM_BBOXES)  # Converting from tensor format to list
-        pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]  # Selecting most confident cell
-        draw_rectangles(image,
-                        np.expand_dims(np.array(bbox_resize(xywh2xyxy(pred_output[:, :4]), DETECTION_SIZE, orig_shape[::-1])), axis=0),
-                        str(pred_output[:, 4]))  # Painting bbox
+            listed_output = from_yolo_target(output[:, :10, :, :], detection_image.size(2), grid_size=GRID_SIZE, num_bboxes=NUM_BBOXES)  # Converting from tensor format to list
+            pred_output = listed_output[:, np.argmax(listed_output[:, :, 4]).item(), :]  # Selecting most confident cell
+            if pred_output[:, 4].item() > DETECTION_THRESHOLD:
+                draw_rectangles(image,
+                                np.expand_dims(np.array(bbox_resize(xywh2xyxy(pred_output[:, :4]), DETECTION_SIZE, orig_shape[::-1])), axis=0),
+                                [str(pred_output[:, 4].item())],
+                                name='detection pipeline')  # Painting bbox
+            else:
+                cv2.imshow('detection pipeline', image)
         fps = 1. / (time.time() - start)
+        print(fps)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
@@ -60,5 +64,6 @@ if __name__ == '__main__':
     DETECTION_SIZE = (opt.image_size, opt.image_size)
     GRID_SIZE = opt.grid_size
     NUM_BBOXES = opt.num_bboxes
+    DETECTION_THRESHOLD = 0.4
 
     run_eval()
