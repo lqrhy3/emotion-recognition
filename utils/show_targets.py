@@ -19,13 +19,13 @@ def show_target_images(images_path='train_images/',
         draw_rectangles(img, np.array([points]), name=name, color=color, thickness=thickness)
 
 
-def draw_rectangles(image, rectangles, emotions='', name='image', color=(0, 255, 0), thickness=3):
+def draw_rectangles(image, rectangles, emotions='', name='image', font_scale=2, color=(0, 255, 0), thickness=3):
     img = image
     if not emotions:
         emotions = [''] * rectangles.shape[0]
     for rectangle, emotion in zip(rectangles, emotions):
         img = cv2.rectangle(img, (rectangle[0], rectangle[1]), (rectangle[2], rectangle[3]), color, thickness)
-        img = cv2.putText(img, emotion, (rectangle[0] - 20, rectangle[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), thickness)
+        img = cv2.putText(img, emotion, (rectangle[0] - 20, rectangle[1] - 30), cv2.FONT_HERSHEY_SIMPLEX, fontScale=font_scale, color=(0, 255, 0), thickness=thickness)
     cv2.imshow(name, img)
     # cv2.waitKey(0)
 

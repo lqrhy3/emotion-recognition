@@ -39,7 +39,7 @@ def run_eval():
             if pred_output[:, 4].item() > DETECTION_THRESHOLD:
                 draw_rectangles(image,
                                 np.expand_dims(np.array(bbox_resize(xywh2xyxy(pred_output[:, :4]), DETECTION_SIZE, orig_shape[::-1])), axis=0),
-                                [str(pred_output[:, 4].item())],
+                                '', #[str(pred_output[:, 4].item())[:5]],
                                 name='detection pipeline')  # Painting bbox
             else:
                 cv2.imshow('detection pipeline', image)

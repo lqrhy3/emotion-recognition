@@ -104,8 +104,8 @@ if __name__ == '__main__':
                         help='path to classification model')
     parser.add_argument('--grid_size', type=int, default=9, help='grid size')
     parser.add_argument('--num_bboxes', type=int, default=2, help='number of bboxes')
-    parser.add_argument('--detection_shape', type=int, default=288, help='detection image size')
-    parser.add_argument('--classification_shape', type=int, default=64, help='classification image size')
+    parser.add_argument('--detection_size', type=int, default=288, help='detection image size')
+    parser.add_argument('--classification_size', type=int, default=64, help='classification image size')
     parser.add_argument('--detection_threshold', type=float, default=0.3, help='detection threshold')
     parser.add_argument('--emotions', type=str, default='Anger Happy Neutral Surprise',
                         help='emotions list which model has trained on (space separated)\n')
@@ -119,8 +119,8 @@ if __name__ == '__main__':
     GRID_SIZE = opt.grid_size
     NUM_BBOXES = opt.num_bboxes
     EMOTIONS_LIST = opt.emotions.split()
-    DETECTION_SIZE = (opt.detection_shape, opt.detection_shape)
-    CLASSIFICATION_SIZE = (opt.classification_shape, opt.classification_shape)
+    DETECTION_SIZE = (opt.detection_size, opt.detection_size)
+    CLASSIFICATION_SIZE = (opt.classification_size, opt.classification_size)
     DETECTION_THRESHOLD = opt.detection_threshold
     DEVICE = opt.device
 

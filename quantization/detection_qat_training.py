@@ -1,3 +1,4 @@
+import argparse
 import os
 import albumentations
 import torch
@@ -5,71 +6,78 @@ from torch.utils.data import DataLoader
 from utils.datasets import DetectionDataset
 from utils.loss import Loss
 
+
 # Quantization aware training
-PATH_TO_DATA = 'data/detection/callibration_images'
-PATH_TO_MODEL = 'log/detection/20.03.31_11-56/model.pt'
-PATH_TO_STATE_DICT = 'log/detection/20.03.31_11-56/checkpoint.pt'
+def run_qat():
+    train_transform = albumentations.Compose([
+        albumentations.RandomSizedBBoxSafeCrop(height=IMAGE_SIZE[0], width=IMAGE_SIZE[1], always_apply=True),
+        albumentations.HorizontalFlip(p=0.5),
+        albumentations.Rotate(15, p=0.5),
 
-ENGINE = 'fbgemm'
-IMAGE_SIZE = (288, 288)
-NUM_BATCHES = 10
-BATCH_SIZE = 6
-NUM_EPOCHS = 10
-GRID_SIZE = 9
-SAVE_TYPE = 'trace'
+    ], bbox_params=albumentations.BboxParams(format='pascal_voc', label_fields=['labels']))
 
-train_transform = albumentations.Compose([
-    albumentations.RandomSizedBBoxSafeCrop(height=IMAGE_SIZE[0], width=IMAGE_SIZE[1], always_apply=True),
-    albumentations.HorizontalFlip(p=0.5),
-    albumentations.Rotate(15, p=0.5),
+    dataset = DetectionDataset(transform=train_transform, grid_size=9, num_bboxes=2, path=PATH_TO_DATA)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-], bbox_params=albumentations.BboxParams(format='pascal_voc', label_fields=['labels']))
+    model = torch.load(os.path.join(PATH_TO_MODEL, 'model.pt'), map_location='cpu')
+    load = torch.load(os.path.join(PATH_TO_MODEL, 'checkpoint.pt'), map_location='cpu')
+    model.load_state_dict(load['model_state_dict'])
 
-dataset = DetectionDataset(transform=train_transform, grid_size=9, num_bboxes=2, path=PATH_TO_DATA)
-dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+    model.fuse_model()
+    model.qconfig = torch.quantization.get_default_qat_qconfig(ENGINE)
+    torch.quantization.prepare_qat(model, inplace=True)
 
-model = torch.load(os.path.join('..', PATH_TO_MODEL), map_location='cpu')
-load = torch.load(os.path.join('..', PATH_TO_STATE_DICT), map_location='cpu')
-model.load_state_dict(load['model_state_dict'])
+    model.train()
 
-model.fuse_model()
-model.qconfig = torch.quantization.get_default_qat_qconfig(ENGINE)
-torch.quantization.prepare_qat(model, inplace=True)
+    loss = Loss(grid_size=GRID_SIZE, num_bboxes=2)
 
-model.train()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.000001)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=1)  # OFF
 
-loss = Loss(grid_size=GRID_SIZE, num_bboxes=2)
+    for epoch in range(NUM_EPOCHS):
+        print("Epochs:", epoch)
+        for image, target, _ in dataloader:
+            optimizer.zero_grad()
 
-# ???????????????????????????????????????
-optimizer = torch.optim.Adam(model.parameters(), lr=0.00001)
-scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10], gamma=1)  # OFF
+            output = model(image)
+
+            loss_value, _ = loss(output, target)
+            loss_value.backward()
+            optimizer.step()
+            scheduler.step(epoch)
+
+        if epoch > 2:
+            # Freeze batch norm mean and variance estimates
+            model.apply(torch.nn.intrinsic.qat.freeze_bn_stats)
+        if epoch > 3:
+            # Freeze quantizer parameters
+            model.apply(torch.quantization.disable_observer)
+
+    load['model_state_dict'] = model.state_dict()
+    torch.save(load, os.path.join(PATH_TO_MODEL, 'checkpoint_qat.pt'))
 
 
-for epoch in range(NUM_EPOCHS):
-    print("Epochs:", epoch)
-    for image, target, _ in dataloader:
-        optimizer.zero_grad()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Script to quantization aware training'
+                                                 'for detection task',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('--path_to_model', type=str, default='log/detection/20.03.26_12-28', help='path to model')
+    parser.add_argument('--path_to_data', type=str, default='data/detection/callibration_images')
+    parser.add_argument('--num_epochs', type=int, default=8)
+    parser.add_argument('--batch_size', type=int, default=26, help='calibration batch size')
+    parser.add_argument('--grid_size', type=int, default=9)
+    parser.add_argument('--num_bboxes', type=int, default=2)
+    parser.add_argument('--image_size', type=int, default=288, help='calibration image size')
+    opt = parser.parse_args()
 
-        output = model(image)
+    PATH_TO_MODEL = os.path.join('..', opt.path_to_model)
+    PATH_TO_DATA = os.path.join('..', opt.path_to_data)
+    NUM_EPOCHS = opt.num_epochs
+    BATCH_SIZE = opt.batch_size
+    GRID_SIZE = opt.grid_size
+    NUM_BBOXES = opt.num_bboxes
+    IMAGE_SIZE = opt.image_size
+    NUM_BATCHES = opt.num_batches
+    ENGINE = 'fbgemm'
 
-        loss_value, _ = loss(output, target)
-        loss_value.backward()
-        optimizer.step()
-        scheduler.step(epoch)
-
-    if epoch > 2:
-        # Freeze batch norm mean and variance estimates
-        model.apply(torch.nn.intrinsic.qat.freeze_bn_stats)
-    if epoch > 3:
-        # Freeze quantizer parameters
-        model.apply(torch.quantization.disable_observer)
-
-model.eval()
-torch.quantization.convert(model, inplace=True)
-
-if SAVE_TYPE == 'trace':
-    torch.jit.save(torch.jit.trace(model, torch.ones((BATCH_SIZE, 3, *IMAGE_SIZE))),
-                   os.path.join('..', PATH_TO_MODEL[:-8], PATH_TO_MODEL.split('/')[-1][:-3] + '_quantized.pt'))
-elif SAVE_TYPE == 'script':
-    torch.jit.save(torch.jit.script(model),
-                   os.path.join('..', PATH_TO_MODEL[:-8], PATH_TO_MODEL.split('/')[-1][:-3] + '_quantized.pt'))
+    run_qat()

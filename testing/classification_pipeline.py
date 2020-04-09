@@ -43,10 +43,10 @@ def run_eval():
                               thickness=2)
         image = cv2.putText(image,
                             "PLACE YOUR FACE IN THE BOX",
-                            (subframe_coords[0] - 325, subframe_coords[3] + 200),
+                            (subframe_coords[0] - 105, subframe_coords[3] + 75),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            2,
-                            color=(255, 0, 0),
+                            1,
+                            color=(0, 0, 255),
                             thickness=3)
 
         cl_image = ToTensor()(cl_image).unsqueeze(0).to(DEVICE)
@@ -56,7 +56,7 @@ def run_eval():
                             pred_emo,
                             (subframe_coords[0] - 20, subframe_coords[1] - 30),
                             cv2.FONT_HERSHEY_SIMPLEX,
-                            4,
+                            3,
                             color=(0, 255, 0),
                             thickness=3)
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
     parser.add_argument('--path_to_model', type=str, default='log/classification/20.03.30_20-13', help='path to model')
     parser.add_argument('--image_size', type=int, default=64, help='image size')
     parser.add_argument('--emotions', type=str, default='Anger Happy Neutral Surprise',
-                        help='emotions list which model has trained on (space separated)\n')
+                        help='emotions list which model has trained on (space separated)')
     parser.add_argument('--device', type=str, default='cpu',
                         choices=['cpu', 'cuda:0'])
 
