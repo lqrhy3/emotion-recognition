@@ -62,7 +62,8 @@ if __name__ == '__main__':
                                                  'for detection task',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--path_to_model', type=str, default='log/detection/20.03.26_12-28', help='path to model')
-    parser.add_argument('--path_to_data', type=str, default='data/detection/callibration_images')
+    parser.add_argument('--path_to_data', type=str, default='data/detection/callibration_images',
+                        help='path to data')
     parser.add_argument('--num_epochs', type=int, default=8)
     parser.add_argument('--batch_size', type=int, default=26, help='calibration batch size')
     parser.add_argument('--grid_size', type=int, default=9)

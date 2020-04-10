@@ -46,10 +46,11 @@ def run_ptq():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Script to run post training quantization with calibration '
-                                                 'for classification task',
+                                                 'for detection task',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--path_to_model', type=str, default='log/detection/20.03.26_12-28', help='path to model')
-    parser.add_argument('--path_to_data', type=str, default='data/detection/callibration_images')
+    parser.add_argument('--path_to_data', type=str, default='data/detection/callibration_images',
+                        help='path to calibration data')
     parser.add_argument('--image_size', type=int, default=64, help='calibration image size')
     parser.add_argument('--batch_size', type=int, default=1, help='calibration batch size')
     parser.add_argument('--num_batches', type=int, default=5, help='number of calibration batches')

@@ -49,7 +49,8 @@ if __name__ == '__main__':
                                                  'for classification task',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--path_to_model', type=str, default='log/emorec/20.03.30_20-13', help='path to model')
-    parser.add_argument('--path_to_data', type=str, default='data/classification/callibration_images')
+    parser.add_argument('--path_to_data', type=str, default='data/classification/callibration_images',
+                        help='path to calibration data')
     parser.add_argument('--image_size', type=int, default=64, help='calibration image size')
     parser.add_argument('--batch_size', type=int, default=1, help='calibration batch size')
     parser.add_argument('--num_batches', type=int, default=5, help='number of calibration batches')
