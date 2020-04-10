@@ -4,30 +4,26 @@ import cv2
 import torch
 import os
 import rootpath
+import configparser
 
 
-PATH_TO_DETECTION_MODEL = 'log\\detection\\20.01.13_12-53'
-PATH_TO_RECOGNITION_MODEL = 'log\\classification\\20.01.25_03-16'
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+
+PATH_TO_DETECTION_MODEL = config['path_to_models']['detection_model']
+PATH_TO_RECOGNITION_MODEL = config['path_to_models']['recognition_model']
 PATH_TO_DETECTION_MODEL = os.path.join(rootpath.detect(), PATH_TO_DETECTION_MODEL)
 PATH_TO_RECOGNITION_MODEL = os.path.join(rootpath.detect(), PATH_TO_RECOGNITION_MODEL)
-emotions = ['Anger', 'Happy', 'Neutral', 'Surprise']
-DETECTION_SHAPE = (320, 320)
-EMOREC_SHAPE = (64, 64)
-DETECTION_TRESHOLD = 0.4
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
 
-detection_model = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model.pt'), map_location=device)
-detection_load = torch.load(os.path.join(PATH_TO_DETECTION_MODEL, 'checkpoint.pt'), map_location=device)
-detection_model.load_state_dict(detection_load['model_state_dict'])
-
+detection_model = torch.jit.load(os.path.join(PATH_TO_DETECTION_MODEL, 'model_quantized.pt'))
 
 detection_model.to(device)
 detection_model.eval()
 
-recognition_model = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'detection_model.pt'), device)
-recognition_load = torch.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'checkpoint.pt'), device)
-recognition_model.load_state_dict(recognition_load['model_state_dict'])
+recognition_model = torch.jit.load(os.path.join(PATH_TO_RECOGNITION_MODEL, 'model_quantized.pt'))
 
 recognition_model.to(device)
 recognition_model.eval()
