@@ -4,7 +4,7 @@ blessings==1.7
 certifi==2019.11.28
 chardet==3.0.4
 Click==7.0
-codecov==2.0.15
+codecov==2.0.16
 colorama==0.4.3
 coloredlogs==14.0
 colour-runner==0.1.1
