@@ -3,7 +3,7 @@
 # Fast Emotion Recognition Neural Network for IoT Devices
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 
-<img src="demo/video_streaming.gif" alt="example" height="75%" width="75%" title="example">
+<img src="demo/demo.gif" alt="example" height="75%" width="75%" title="example">
 </div>
 
 ## Description
