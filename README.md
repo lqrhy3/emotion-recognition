@@ -27,6 +27,9 @@ conda activate emotion-recognition
 
 # install requirements
 pip install -r requirements.txt
+
+# set PYTHONPATH variable
+export PYTHONPATH=$PYHONPATH:/<path>/emotion-recognition
 ```
 
 ## Data
