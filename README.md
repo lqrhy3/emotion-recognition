@@ -10,6 +10,7 @@
 
 PyTorch implementation of paper *"Fast Emotion Recognition Neural Network for IoT Devices"* by S. Mikhaylevskiy, V. Chernyavskiy and V. Pavlishen.
 
+This project focused on developing an efficient system for recognizing human emotions from facial expressions, designed to run on edge devices, with the final optimized model weighing just 6MB and achieving 4 FPS on Raspberry Pi 3.
 **[[Paper]](https://ieeexplore.ieee.org/abstract/document/9444517)**
 
 ## Installation and environment
@@ -33,7 +34,12 @@ export PYTHONPATH=$PYHONPATH:/<path>/emotion-recognition
 ```
 
 ## Data
+While the origins of the data remain unknown, both the training data and data for quantization are available on this repository. The dataset includes four categories of data: detection training data, detection calibration data, classification training data, and classification calibration data.
 
+* Detection training data: [Link](data/detection/train_images)
+* Detection calibration data: [Link](data/detection/calibration_images)
+* Classification training data: [Link](data/classification/train_images)
+* Classification calibration data: [Link](data/classification/calibration_images)
 
 ## Face Detection
 
@@ -48,7 +54,7 @@ python3 train.py --config <path to config (in 'configs' folder)> --debug <True f
 ## Emotion Recognition Pipeline
 
 ## Citation
-If you find our code or paper is helpful, please consider citing:
+If you find our code, data or paper is helpful, please consider citing:
 ```
 @article{9444517,
   author={Mikhaylevskiy, S. and Chernyavskiy, V. and Pavlishen, V. and Romanova, I. and Solovyev, R.},
