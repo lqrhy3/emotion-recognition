@@ -56,7 +56,6 @@ Evaluating face-detection model:
 python3 testing/detection_pipeline.py [-h] [--path_to_model] [--grid_size GRID_SIZE] [--num_bboxes NUM_BBOXES] 
                               [--image_size IMAGE_SIZE] [--detection_threshold DETECTION_THRESHOLD] [--device DEVICE]
 ```
-~image or gif~
 
 ## Emotion Classification
 
@@ -72,8 +71,6 @@ Evaluating emotion-classification model:
 python3 testing/classification_pipeline.py [-h] [--path_to_model PATH_TO_MODEL] [--image_size IMAGE_SIZE] 
                                    [--emotions EMOTIONS_LIST] [--device {cpu,cuda:0}]
 ```
-~image or gif~
-
 
 ## Emotion Recognition Pipeline
 
@@ -85,7 +82,6 @@ python3 testing/detection&classification_pipeline.py [-h] [--path_to_detection_m
                                                      [--classification_size CLASSIFICATION_SIZE] [--detection_threshold DETECTION_THRESHOLD]
                                                      [--emotions EMOTIONS_LIST] [--device {cpu,cuda:0}]
 ```
-~image or gif~
 
 ## Quantization
 Running post-training quantization:
