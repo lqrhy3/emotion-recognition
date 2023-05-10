@@ -10,7 +10,8 @@
 
 PyTorch implementation of paper *"Fast Emotion Recognition Neural Network for IoT Devices"* by S. Mikhaylevskiy, V. Chernyavskiy and V. Pavlishen.
 
-This project focused on developing an efficient system for recognizing human emotions from facial expressions, designed to run on edge devices, with the final optimized model weighing just 6MB and achieving 4 FPS on Raspberry Pi 3.
+This project focused on developing an efficient system for recognizing human emotions from facial expressions, designed to run on edge devices, with the final optimized models weighing just 6MB and achieving 4 FPS on Raspberry Pi 3. Pipeline consist of two separate models: one for face detection and the other for emotion classification. We could utilize one composite model, but...
+
 **[[Paper]](https://ieeexplore.ieee.org/abstract/document/9444517)**
 
 ## Installation and environment
@@ -43,15 +44,74 @@ While the origins of the data remain unknown, both the training data and data fo
 
 ## Face Detection
 
+Training face-detection model:
 ```bash
-python3 train.py --config <path to config (in 'configs' folder)> --debug <True for sanity checker, default False>
+python3 training/detection_train.py [-h] [--num_epochs EPOCHS] [--batch_size BATCH_SIZE] [--lr LEARNING RATE] 
+                           [--grid_size GRID_SIZE] [--num_bboxes NUM_BBOXES] [--val_split VAL_SPLIT] 
+                           [--path_to_log PATH_TO_LOG] [--model MODEL] [--path_to_data PATH_TO_DATA]
 ```
 
+Evaluating face-detection model:
+```bash
+python3 testing/detection_pipeline.py [-h] [--path_to_model] [--grid_size GRID_SIZE] [--num_bboxes NUM_BBOXES] 
+                              [--image_size IMAGE_SIZE] [--detection_threshold DETECTION_THRESHOLD] [--device DEVICE]
+```
+~image or gif~
+
 ## Emotion Classification
-  
-## Quantization
+
+Training emotion-classification model:
+```bash
+python3 training/classification_train.py [-h] [--num_epochs NUM_EPOCHS] [--batch_size BATCH_SIZE] [--lr LR]
+                                [--val_split VAL_SPLIT] [--path_to_log PATH_TO_LOG] [--comment COMMENT]
+                                [--model {MiniXception,ConvNet}] [--path_to_data PATH_TO_DATA] [--emotions EMOTIONS_LIST]
+```
+
+Evaluating emotion-classification model:
+```bash
+python3 testing/classification_pipeline.py [-h] [--path_to_model PATH_TO_MODEL] [--image_size IMAGE_SIZE] 
+                                   [--emotions EMOTIONS_LIST] [--device {cpu,cuda:0}]
+```
+~image or gif~
+
 
 ## Emotion Recognition Pipeline
+
+Running emotion-recognition pipeline:
+```bash
+python3 testing/detection&classification_pipeline.py [-h] [--path_to_detection_model PATH_TO_DETECTION_MODEL] 
+                                                     [--path_to_classification_model PATH_TO_CLASSIFICATION_MODEL]
+                                                     [--grid_size GRID_SIZE] [--num_bboxes NUM_BBOXES] [--detection_size DETECTION_SIZE]
+                                                     [--classification_size CLASSIFICATION_SIZE] [--detection_threshold DETECTION_THRESHOLD]
+                                                     [--emotions EMOTIONS_LIST] [--device {cpu,cuda:0}]
+```
+~image or gif~
+
+## Quantization
+Running post-training quantization:
+```bash
+# detection model
+python3 quantization/detection_post_training_quatization.py [-h] [--path_to_model PATH_TO_MODEL] [--path_to_data PATH_TO_DATA]
+                                                            [--image_size IMAGE_SIZE] [--batch_size BATCH_SIZE] [--num_batches NUM_BATCHES] 
+                                                            [--save_type SAVE_TYPE]
+# classification model 
+python3 quantization/classification_post_training_quatization.py [-h] [--path_to_model PATH_TO_MODEL] [--path_to_data PATH_TO_DATA]
+                                                                 [--image_size IMAGE_SIZE] [--batch_size BATCH_SIZE] [--num_batches NUM_BATCHES] 
+                                                                 [--emotions EMOTIONS_LIST] [--save_type SAVE_TYPE]
+```
+
+## Demo Application
+
+Running Flask app for demonstrating pipeline:
+
+```bash
+cd video-streaming
+sudo chmod 0777 app.sh
+./app.sh
+```
+You should specify in `config.ini` path to quantized model
+
+Application will be accessible at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ## Citation
 If you find our code, data or paper is helpful, please consider citing:
