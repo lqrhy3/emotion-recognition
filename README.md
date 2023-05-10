@@ -9,7 +9,6 @@
 ## Description
 
 PyTorch implementation of paper *"Fast Emotion Recognition Neural Network for IoT Devices"* by S. Mikhaylevskiy, V. Chernyavskiy and V. Pavlishen.
-<description>
 
 **[[Paper]](https://ieeexplore.ieee.org/abstract/document/9444517)**
 
@@ -47,6 +46,7 @@ python3 train.py --config <path to config (in 'configs' folder)> --debug <True f
 
 ## Citation
 If you find our code or paper is helpful, please consider citing:
+```
 @article{9444517,
   author={Mikhaylevskiy, S. and Chernyavskiy, V. and Pavlishen, V. and Romanova, I. and Solovyev, R.},
   booktitle={2021 International Seminar on Electron Devices Design and Production (SED)}, 
@@ -55,7 +55,8 @@ If you find our code or paper is helpful, please consider citing:
   volume={},
   number={},
   pages={1-6},
-  doi={10.1109/SED51197.2021.9444517}}
+  doi={10.1109/SED51197.2021.9444517}
+}
 
 ______________________________________________________________________
 
