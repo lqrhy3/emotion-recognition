@@ -10,7 +10,7 @@
 
 PyTorch implementation of paper *"Fast Emotion Recognition Neural Network for IoT Devices"* by S. Mikhaylevskiy, V. Chernyavskiy and V. Pavlishen.
 
-This project focused on developing an efficient system for recognizing human emotions from facial expressions, designed to run on edge devices, with the final optimized models weighing just 6MB and achieving 4 FPS on Raspberry Pi 3. Pipeline consist of two separate models: one for face detection and the other for emotion classification. We could utilize one composite model, but...
+This project is focused on developing an efficient system for recognizing human emotions from facial expressions, designed to run on edge devices, with the final optimized models weighing just 6MB and achieving 4 FPS on Raspberry Pi 3. Pipeline consist of two separate models: one for face detection and the other for emotion classification. We could utilize one composite model, but...
 
 **[[Paper]](https://ieeexplore.ieee.org/abstract/document/9444517)**
 
