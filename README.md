@@ -38,9 +38,9 @@ export PYTHONPATH=$PYHONPATH:/<path>/emotion-recognition
 While the origins of the data remain unknown, both the training data and data for quantization are available on this repository. The dataset includes four categories of data: detection training data, detection calibration data, classification training data, and classification calibration data.
 
 * Detection training data: [Link](data/detection/train_images)
-* Detection calibration data: [Link](data/detection/calibration_images)
+* Detection calibration data: [Link](data/detection/callibration_images)
 * Classification training data: [Link](data/classification/train_images)
-* Classification calibration data: [Link](data/classification/calibration_images)
+* Classification calibration data: [Link](data/classification/callibration_images)
 
 ## Face Detection
 
