@@ -110,7 +110,7 @@ You should specify in `config.ini` path to quantized model
 Application will be accessible at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ## Citation
-If you find our code, data or paper is helpful, please consider citing:
+If you find our code, data or paper helpful, please consider citing:
 ```
 @article{9444517,
   author={Mikhaylevskiy, S. and Chernyavskiy, V. and Pavlishen, V. and Romanova, I. and Solovyev, R.},
